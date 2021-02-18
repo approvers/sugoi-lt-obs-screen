@@ -1,0 +1,17 @@
+@import "../color.variables";
+
+.main_root {
+  display: flex;
+
+  width: 100%;
+  height: auto;
+}
+
+.mask {
+  @include mask();
+}
+
+.timeline {
+  flex: 1;
+  @include back();
+}

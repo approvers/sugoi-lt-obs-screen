@@ -1,14 +1,15 @@
 import React from 'react';
-import styles from "./App.module.scss";
+import {Notification} from "./parts/Notification";
+import {Main} from "./parts/Main";
+import { Footer } from './parts/Footer';
 
 function App() {
   return (
-    <div className={styles.test}>
-      Hello, 
-      <div className={styles.hoge}>
-        World!
-      </div>
-    </div>
+    <>
+      <Notification />
+      <Main />
+      <Footer />
+    </>
   );
 }
 
