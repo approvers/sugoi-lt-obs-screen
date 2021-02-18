@@ -31,7 +31,8 @@ export const initialState: ScreenData = ({
       identifier: "[Presenter Identifier]",
       userIcon: "https://pbs.twimg.com/profile_images/1328732285160472576/PiG9XbZ7_400x400.jpg"
     },
-    title: "[Presentation Title]"
+    title: "[Presentation Title]",
+    icon_fit_position: 0.6
   },
   timeline: [
     {

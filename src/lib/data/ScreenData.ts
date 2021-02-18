@@ -6,6 +6,7 @@ export type Person = {
 
 export type Presentation = {
   presenter: Person;
+  icon_fit_position?: number;
   title: string;
 }
 
