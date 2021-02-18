@@ -29,7 +29,7 @@ export const Timeline: React.FC<TimelineProps> = ({timeline}) => {
                 <span>
                   {card.user.userIcon && <img src={card.user.userIcon} className={styles.card_icon}/>}
                   {card.user.name}
-                  (<span className={styles.card_ident}>@{card.user.identifier}</span>)
+                  {card.user.identifier && (<> (<span className={styles.card_ident}>@{card.user.identifier}</span>)</>)}
                 </span>
                 <span className={styles[`card_service_${card.service}`]}>
                   <svg>
