@@ -1,6 +1,9 @@
 @import "../color.variables";
 @import "../layout.variables";
 
+$icon_start: 10%;
+$icon_ratio: 30%;
+
 .footer_root {
   @include back();
   padding: 2em;
@@ -13,12 +16,12 @@
   z-index: -1;
   position: absolute;
   top: 0;
-  left: 0;
+  left: calc(#{$icon_start} - 7%);
   right: 0;
   bottom: 0;
   & img {
     z-index: 0;
-    width: 30%;
+    width: $icon_ratio;
     height: 100%;
     object-fit: cover;
   }
@@ -33,9 +36,10 @@
     right: 0;
     background: linear-gradient(
       90deg,
-      rgba(back-color(), 0.7) 0%,
-      rgba(back-color(), 0.7) 20%,
-      rgba(back-color(), 1) 30%,
+      rgba(back-color(), 1) 0%,
+      rgba(back-color(), 0.7) $icon_start,
+      rgba(back-color(), 0.7) calc(#{$icon_ratio} - 10%),
+      rgba(back-color(), 1) $icon_ratio,
       rgba(back-color(), 1) 100%
     );
   }
