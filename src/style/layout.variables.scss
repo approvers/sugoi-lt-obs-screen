@@ -1,0 +1,9 @@
+@mixin padding {
+  padding: 1rem;
+}
+
+@mixin title {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 100%;
+}
