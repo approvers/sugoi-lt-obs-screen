@@ -4,6 +4,8 @@ import {useWindowDimensions} from "../../../lib/WindowHooks";
 
 export const Mask = () => {
   const {width} = useWindowDimensions();
+
+  // TODO: この数値をどうにかしたい
   const netWidth = width * 0.808;
 
   return (
