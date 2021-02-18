@@ -4,14 +4,15 @@ import {useWindowDimensions} from "../../../lib/WindowHooks";
 
 export const Mask = () => {
   const {width} = useWindowDimensions();
-  const netWidth = width * 0.8;
+  const netWidth = width * 0.808;
 
   return (
       <div
         className={styles.mask}
         style={{
           width: `${netWidth}px`,
-          height: `${netWidth * (9 / 16)}px`, }}
+          height: `${netWidth * (9 / 16)}px`
+        }}
       />
   )
 }

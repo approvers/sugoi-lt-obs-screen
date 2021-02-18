@@ -1,6 +1,6 @@
 export type Person = {
   userIcon?: string;
-  identifier: string;
+  identifier?: string;
   name: string;
 }
 

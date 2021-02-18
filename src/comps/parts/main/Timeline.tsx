@@ -9,12 +9,20 @@ export const Timeline: React.FC<TimelineProps> = ({timeline}) => (
   <div className={styles.timeline}>
     {
       timeline.map(
-        (card, index) => <div key={index}>
-          <p>{card.content}</p>
-          <div>
-            {card.user.name} (@{card.user.identifier}) has spoken via {card.service}
+        (card, index) => (
+          <div className={styles.card} key={index}>
+            <p className={styles.card_content}>{card.content}</p>
+            <div className={styles.card_detail}>
+              <span>
+                {card.user.name}
+                (<span className={styles.card_ident}>@{card.user.identifier}</span>)
+              </span>
+              <span>
+                {card.service.charAt(0)}
+              </span>
+            </div>
           </div>
-        </div>
+        )
       )
     }
   </div>
