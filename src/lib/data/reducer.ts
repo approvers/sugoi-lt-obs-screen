@@ -24,7 +24,7 @@ export type Action =
     args: never
   };
 
-export const initialState = ({
+export const initialState: ScreenData = ({
   presentation: {
     presenter: {
       name: "[Presenter Name]",
@@ -33,7 +33,35 @@ export const initialState = ({
     },
     title: "[Presentation Title]"
   },
-  timeline: [],
+  timeline: [
+    {
+      service: "youtube",
+      user: {
+        userIcon: undefined,
+        identifier: "[ident1]",
+        name: "Name1"
+      },
+      content: "Some random content here",
+    },
+    {
+      service: "discord",
+      user: {
+        userIcon: "https://pbs.twimg.com/profile_images/1328732285160472576/PiG9XbZ7_400x400.jpg",
+        identifier: "[ident2]",
+        name: "Name2"
+      },
+      content: "Some random content here",
+    },
+    {
+      service: "twitter",
+      user: {
+        userIcon: "https://pbs.twimg.com/profile_images/1328732285160472576/PiG9XbZ7_400x400.jpg",
+        identifier: "[ident3]",
+        name: "Name3"
+      },
+      content: "Some random content here",
+    }
+  ],
   notification: "[Notification]"
 });
 
