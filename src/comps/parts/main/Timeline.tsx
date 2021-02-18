@@ -1,7 +1,13 @@
 import * as React from "react";
 import styles from "../../../style/comps/main.module.scss";
-import {TimelineCard} from "../../../lib/data/ScreenData";
+import {Service, TimelineCard} from "../../../lib/data/ScreenData";
 import {useWindowDimensions} from "../../../lib/WindowHooks";
+
+const icon: { [key in Service]: string } = {
+  "twitter": "/font-awesome/twitter-brands.svg",
+  "discord": "/font-awesome/discord-brands.svg",
+  "youtube": "/font-awesome/youtube-brands.svg",
+}
 
 type TimelineProps = {
   timeline: TimelineCard[]
@@ -24,8 +30,10 @@ export const Timeline: React.FC<TimelineProps> = ({timeline}) => {
                   {card.user.name}
                   (<span className={styles.card_ident}>@{card.user.identifier}</span>)
                 </span>
-                <span>
-                  {card.service.charAt(0)}
+                <span className={styles[`card_service_${card.service}`]}>
+                  <svg>
+                    <use xlinkHref={icon[card.service] + "#icon"} />
+                  </svg>
                 </span>
               </div>
             </div>

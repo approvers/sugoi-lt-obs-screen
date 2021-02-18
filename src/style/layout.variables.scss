@@ -1,3 +1,5 @@
+@import "color.variables";
+
 @mixin padding {
   padding: 1rem;
 }
@@ -6,6 +8,7 @@
   font-size: 2.5rem;
   font-weight: 700;
   line-height: 100%;
+  text-shadow: 0 0 10px back-color();
 }
 
 @mixin sub-title {

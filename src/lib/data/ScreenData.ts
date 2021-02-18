@@ -10,9 +10,11 @@ export type Presentation = {
   title: string;
 }
 
+export type Service = "twitter" | "discord" | "youtube";
+
 export type TimelineCard = {
   user: Person;
-  service: "twitter" | "discord" | "youtube";
+  service: Service;
   content: string;
 }
 

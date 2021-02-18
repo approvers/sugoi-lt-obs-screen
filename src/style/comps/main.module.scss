@@ -48,4 +48,30 @@
     font-family: "Roboto Mono", monospace;
   }
 
+  &_service{
+    margin-left: 0.5em;
+
+    svg {
+      vertical-align: middle;
+      width: 1.5em;
+      height: 1.5em;
+    }
+
+    &_discord {
+      @extend .card_service;
+      color: #7f75f1;
+    }
+
+    &_twitter {
+      @extend .card_service;
+      color: #2fbcdd;
+    }
+
+    &_youtube {
+      @extend .card_service;
+      color: #fa5f5f;
+    }
+
+  }
+
 }
