@@ -3,7 +3,12 @@
 }
 
 @mixin title {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 700;
   line-height: 100%;
+}
+
+@mixin sub-title {
+  @include title;
+  font-size: 1.5rem;
 }

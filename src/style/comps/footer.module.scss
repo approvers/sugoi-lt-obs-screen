@@ -1,5 +1,57 @@
 @import "../color.variables";
+@import "../layout.variables";
 
 .footer_root {
   @include back();
+  padding: 2em;
+
+  position: relative;
+  z-index: 0;
+}
+
+.icon {
+  z-index: -1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  & img {
+    z-index: 0;
+    width: 30%;
+    height: 100%;
+    object-fit: cover;
+  }
+  &:after {
+    z-index: 1;
+    display: block;
+    position: absolute;
+    content: "";
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(
+      90deg,
+      rgba(back-color(), 0.7) 0%,
+      rgba(back-color(), 0.7) 20%,
+      rgba(back-color(), 1) 30%,
+      rgba(back-color(), 1) 100%
+    );
+  }
+}
+
+.presenter {
+  @include sub-title;
+  &_name {
+    margin-right: 0.5em;
+  }
+  &_ident {
+    font-family: "Roboto Mono", monospace;
+  }
+}
+
+.title {
+  margin-top: 0.15em;
+  @include title;
 }
