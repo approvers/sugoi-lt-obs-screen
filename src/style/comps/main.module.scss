@@ -18,6 +18,9 @@
   justify-content: flex-end;
   flex: 1;
   @include back();
+
+  overflow-wrap: anywhere;
+  overflow-y: hidden;
 }
 
 .card {
