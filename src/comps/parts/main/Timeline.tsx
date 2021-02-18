@@ -27,6 +27,7 @@ export const Timeline: React.FC<TimelineProps> = ({timeline}) => {
               <p className={styles.card_content}>{card.content}</p>
               <div className={styles.card_detail}>
                 <span>
+                  {card.user.userIcon && <img src={card.user.userIcon} className={styles.card_icon}/>}
                   {card.user.name}
                   (<span className={styles.card_ident}>@{card.user.identifier}</span>)
                 </span>
