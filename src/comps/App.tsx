@@ -6,6 +6,8 @@ import styles from "../style/app.module.scss";
 import { WaitingScreen } from "./waiting/WaitingScreen";
 import { Page, ScreenData } from "../lib/data/ScreenData";
 
+import { listen } from "tauri/api/event";
+
 function selectPage(page: Page): React.FC<{ state: ScreenData }> {
   switch (page) {
     case "LTScreen":
@@ -20,6 +22,21 @@ function App() {
 
   const CurrentPage = selectPage(state.transition.current);
   const TransitingPage = state.transition.to && selectPage(state.transition.to);
+
+  React.useEffect(() => {
+    listen("test", (data) => {
+      dispatch({
+        type: "timeline.add",
+        args: {
+          new: {
+            user: { name: "test" },
+            service: "discord",
+            content: JSON.stringify(data),
+          },
+        },
+      });
+    });
+  }, []);
 
   return (
     <div className={styles.screen_container}>
