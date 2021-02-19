@@ -15,7 +15,7 @@
     },
     "bundle": {
       "active": true,
-      "targets": "all",
+      "targets": ["deb"],
       "identifier": "com.tauri.dev",
       "resources": [],
       "externalBin": [],
@@ -23,6 +23,13 @@
       "category": "DeveloperTool",
       "shortDescription": "",
       "longDescription": "",
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
       "deb": {
         "depends": [],
         "useBootstrapper": false
@@ -36,8 +43,8 @@
     },
     "window": {
       "title": "Live Screen",
-      "width": 800,
-      "height": 600,
+      "width": 960,
+      "height": 540,
       "resizable": true,
       "fullscreen": false
     },
