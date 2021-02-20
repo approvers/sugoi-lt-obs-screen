@@ -6,10 +6,7 @@ use {
         model::{channel::Message, prelude::Ready},
         prelude::{Client, Context, EventHandler},
     },
-    tokio::sync::{
-        mpsc::{channel, Receiver, Sender},
-        RwLock,
-    },
+    tokio::sync::{mpsc::Sender, RwLock},
 };
 
 const PREFIX: &str = "g!live";
@@ -17,10 +14,13 @@ const PREFIX: &str = "g!live";
 enum Command {
     Help,
     Listen,
+    SetNotification(String),
+    TimelineClear,
 }
 
 struct DiscordListenerInner {
     listening_channel_id: Option<u64>,
+    my_id: Option<u64>,
 }
 
 pub struct DiscordListener {
@@ -34,6 +34,7 @@ impl DiscordListener {
             sender,
             inner: RwLock::new(DiscordListenerInner {
                 listening_channel_id: None,
+                my_id: None,
             }),
         }
     }
@@ -53,6 +54,7 @@ impl DiscordListener {
 
         let text = match cmd {
             Help => "https://hackmd.io/@U9f9Fv6rTt2UkRA6UriFTA/BJRVQlTZO".to_string(),
+
             Listen => {
                 let chan = message.channel_id;
                 self.inner.write().await.listening_channel_id = Some(chan.0);
@@ -61,6 +63,20 @@ impl DiscordListener {
                 tracing::info!("{}", &msg);
 
                 msg
+            }
+
+            SetNotification(text) => {
+                self.sender
+                    .send(ScreenAction::NotificationUpdate { text })
+                    .await
+                    .ok();
+
+                "set".to_string()
+            }
+
+            TimelineClear => {
+                self.sender.send(ScreenAction::TimelineClear).await.ok();
+                "cleared".to_string()
             }
         };
 
@@ -74,9 +90,14 @@ impl DiscordListener {
 impl EventHandler for DiscordListener {
     async fn ready(&self, _: Context, ready: Ready) {
         tracing::info!("DiscordBot({}) is connected!", ready.user.name);
+        self.inner.write().await.my_id = Some(ready.user.id.0);
     }
 
     async fn message(&self, ctx: Context, message: Message) {
+        if self.inner.read().await.my_id.unwrap() == message.author.id.0 {
+            return;
+        }
+
         if self
             .inner
             .read()
@@ -93,7 +114,7 @@ impl EventHandler for DiscordListener {
                         name: message
                             .author_nick(&ctx)
                             .await
-                            .unwrap_or(message.author.name.clone()),
+                            .unwrap_or_else(|| message.author.name.clone()),
                     },
                     service: Service::Discord,
                     content: message.content.clone(),
@@ -111,12 +132,20 @@ impl EventHandler for DiscordListener {
         use Command::*;
         let run_cmd = |c| self.invoke_command(&ctx, &message, c);
 
-        match (prefix, sub_command, args) {
+        match (prefix, sub_command, args.as_slice()) {
             // stabilize or-patterns when
             (None, _, _) => return,
             (Some(p), _, _) if p != PREFIX => return,
 
             (_, Some("listen"), _) => run_cmd(Listen).await,
+
+            (_, Some("set_notification"), args) if args.len() > 0 => {
+                run_cmd(SetNotification(args.join(" "))).await
+            }
+            (_, Some("set_notification"), _) => run_cmd(Help).await,
+
+            (_, Some("clear_timeline"), _) => run_cmd(TimelineClear).await,
+
             (_, _, _) => run_cmd(Help).await,
         };
     }
