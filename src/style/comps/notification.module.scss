@@ -1,0 +1,9 @@
+@import "../color.variables";
+@import "../layout.variables";
+
+.notification_root {
+  @include back();
+  @include padding;
+  @include title;
+  text-align: center;
+}

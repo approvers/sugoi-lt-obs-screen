@@ -1,0 +1,86 @@
+@import "../color.variables";
+@import "../layout.variables";
+
+.main_root {
+  display: flex;
+
+  width: 100%;
+  height: auto;
+}
+
+.mask {
+  @include mask();
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  flex: 1;
+  @include back();
+
+  overflow-wrap: anywhere;
+  overflow-y: hidden;
+}
+
+.card {
+  @include back("light");
+  @include padding;
+  margin: 1em 1em 0;
+  border-radius: 3px;
+
+  &_content {
+    border-bottom: 1px solid;
+    border-color: back-color();
+    padding-bottom: 0.3em;
+    margin-bottom: 0.3em;
+
+    font-size: 1.2em;
+  }
+
+  &_detail {
+    font-size: 0.9em;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  &_icon {
+    width: 1.5em;
+    height: 1.5em;
+    object-fit: cover;
+    border-radius: 100%;
+    vertical-align: text-bottom;
+    margin-right: 0.4em;
+  }
+
+  &_ident {
+    font-family: "Roboto Mono", monospace;
+  }
+
+  &_service{
+    margin-left: 0.5em;
+
+    svg {
+      vertical-align: middle;
+      width: 1.5em;
+      height: 1.5em;
+    }
+
+    &_discord {
+      @extend .card_service;
+      color: #7f75f1;
+    }
+
+    &_twitter {
+      @extend .card_service;
+      color: #2fbcdd;
+    }
+
+    &_youtube {
+      @extend .card_service;
+      color: #fa5f5f;
+    }
+
+  }
+
+}

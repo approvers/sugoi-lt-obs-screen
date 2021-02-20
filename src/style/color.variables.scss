@@ -1,0 +1,39 @@
+@function fore-color($type: "dark") {
+  $primary-color-table: (
+    "dark": #333,
+    "light": #FFF
+  );
+
+  @return map-get($primary-color-table, $type);
+}
+
+@function back-color($type: "dark") {
+  $primary-color-table: (
+    "dark": #424242,
+    "light": #F5FEFF
+  );
+
+  @return map-get($primary-color-table, $type);
+}
+
+@function opposite($type) {
+  $opposite-name: (
+    "dark": "light",
+    "light": "dark"
+  );
+
+  @return map-get($opposite-name, $type);
+}
+
+@mixin mask() {
+  background-color: #0f0;
+}
+
+@mixin fore($type: "dark", $target: color) {
+  #{$target}: fore-color($type);
+}
+
+@mixin back($type: "dark", $back: background-color, $fore: color) {
+  #{$back}: back-color($type);
+  #{$fore}: fore-color(opposite($type));
+}
