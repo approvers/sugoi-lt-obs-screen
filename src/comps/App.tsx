@@ -24,17 +24,8 @@ function App() {
   const TransitingPage = state.transition.to && selectPage(state.transition.to);
 
   React.useEffect(() => {
-    listen("test", (data) => {
-      dispatch({
-        type: "timeline.add",
-        args: {
-          new: {
-            user: { name: "test" },
-            service: "discord",
-            content: JSON.stringify(data),
-          },
-        },
-      });
+    listen("event", (data) => {
+      dispatch(JSON.parse(data.payload as string));
     });
   }, []);
 

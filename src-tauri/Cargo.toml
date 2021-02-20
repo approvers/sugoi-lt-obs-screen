@@ -19,14 +19,14 @@ dotenv = "0.15.0"
 anyhow = "1.0.38"
 regex = "1.4.3"
 
-[dependencies.tokio]
-version = "1.2.0"
-features = [ "rt-multi-thread", "time" ]
+  [dependencies.tokio]
+  version = "1.2.0"
+  features = [ "rt-multi-thread", "time" ]
 
-[dependencies.serenity]
-version = "0.10"
-default-features = false
-features = ["rustls_backend", "cache", "client", "gateway", "model"]
+  [dependencies.serenity]
+  version = "0.10"
+  default-features = false
+  features = [ "rustls_backend", "cache", "client", "gateway", "model" ]
 
 [target."cfg(windows)".build-dependencies]
 winres = "0.1"

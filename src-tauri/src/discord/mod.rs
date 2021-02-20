@@ -1,5 +1,5 @@
 use {
-    crate::model::ScreenAction,
+    crate::model::{ScreenAction, Service, User},
     anyhow::{Context as _, Result},
     serenity::{
         async_trait,
@@ -85,7 +85,21 @@ impl EventHandler for DiscordListener {
             .map(|x| x == message.channel_id.0)
             .unwrap_or(false)
         {
-            // TODO: notify
+            self.sender
+                .send(ScreenAction::TimelinePush {
+                    user: User {
+                        icon: message.author.avatar_url(),
+                        ident: None,
+                        name: message
+                            .author_nick(&ctx)
+                            .await
+                            .unwrap_or(message.author.name.clone()),
+                    },
+                    service: Service::Discord,
+                    content: message.content.clone(),
+                })
+                .await
+                .ok();
         }
 
         let mut tokens = message.content.split(" ");

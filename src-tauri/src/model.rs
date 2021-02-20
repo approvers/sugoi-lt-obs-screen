@@ -2,9 +2,9 @@ use serde::Serialize;
 use serde_json::json;
 
 pub struct User {
-    icon: Option<String>,
-    ident: Option<String>,
-    name: String,
+    pub icon: Option<String>,
+    pub ident: Option<String>,
+    pub name: String,
 }
 
 #[derive(Serialize)]

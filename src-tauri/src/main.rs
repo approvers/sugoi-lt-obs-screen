@@ -4,20 +4,28 @@
     windows_subsystem = "windows"
 )]
 
+mod cmd;
+mod discord;
+mod model;
+
+use crate::discord::DiscordListener;
 use anyhow::{Context as _, Result};
 use std::result::Result as StdResult;
 use std::sync::Arc;
 use std::time::Duration;
 use tauri::{Webview, WebviewMut};
 use tokio::runtime::{Builder as TokioRuntimeBuilder, Runtime as TokioRuntime};
+use tokio::sync::mpsc::channel;
 
-mod cmd;
-mod discord;
-mod model;
+struct Context {
+    rt: TokioRuntime,
+    discord_token: String,
+}
 
 fn main() -> Result<()> {
     dotenv::dotenv().ok();
 
+    let discord_token = std::env::var("DISCORD_TOKEN").context("failed to get DISCORD_TOKEN")?;
     let use_ansi = std::env::var("NO_COLOR").is_err();
 
     tracing_subscriber::fmt()
@@ -30,11 +38,10 @@ fn main() -> Result<()> {
         .build()
         .context("Failed to create tokio runtime")?;
 
-    let rt = Arc::new(rt);
-    let rt2 = Arc::clone(&rt);
+    let ctx = Arc::new(Context { rt, discord_token });
 
     tauri::AppBuilder::new()
-        .setup(move |a, b| setup(Arc::clone(&rt2), a, b))
+        .setup(move |a, b| setup(Arc::clone(&ctx), a, b))
         .invoke_handler(on_client_message)
         .build()
         .run();
@@ -42,14 +49,19 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn setup(rt: Arc<TokioRuntime>, webview: &mut Webview, _source: String) {
+fn setup(ctx: Arc<Context>, webview: &mut Webview, _source: String) {
     let mut webview: WebviewMut = webview.as_mut();
 
-    rt.spawn(async move {
-        let mut interval = tokio::time::interval(Duration::from_secs(5));
-        loop {
-            interval.tick().await;
-            tauri::event::emit(&mut webview, "test", Some("hogehoge")).unwrap();
+    let (tx, mut rx) = channel(10);
+
+    let token = ctx.discord_token.clone();
+    ctx.rt.spawn(async move {
+        DiscordListener::new(tx).start(&token).await.unwrap();
+    });
+
+    ctx.rt.spawn(async move {
+        while let Some(action) = rx.recv().await {
+            tauri::event::emit(&mut webview, "event", Some(model::serialize(action))).unwrap();
         }
     });
 }
