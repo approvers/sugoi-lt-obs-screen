@@ -13,6 +13,7 @@ use tokio::runtime::{Builder as TokioRuntimeBuilder, Runtime as TokioRuntime};
 
 mod cmd;
 mod discord;
+mod model;
 
 fn main() -> Result<()> {
     dotenv::dotenv().ok();

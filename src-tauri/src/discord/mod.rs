@@ -1,11 +1,15 @@
 use {
+    crate::model::ScreenAction,
     anyhow::{Context as _, Result},
     serenity::{
         async_trait,
         model::{channel::Message, prelude::Ready},
         prelude::{Client, Context, EventHandler},
     },
-    tokio::sync::RwLock,
+    tokio::sync::{
+        mpsc::{channel, Receiver, Sender},
+        RwLock,
+    },
 };
 
 const PREFIX: &str = "g!live";
@@ -21,11 +25,13 @@ struct DiscordListenerInner {
 
 pub struct DiscordListener {
     inner: RwLock<DiscordListenerInner>,
+    sender: Sender<ScreenAction>,
 }
 
 impl DiscordListener {
-    pub fn new() -> Self {
+    pub fn new(sender: Sender<ScreenAction>) -> Self {
         Self {
+            sender,
             inner: RwLock::new(DiscordListenerInner {
                 listening_channel_id: None,
             }),
