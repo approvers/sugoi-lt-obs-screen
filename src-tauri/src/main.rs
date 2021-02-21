@@ -4,18 +4,23 @@
     windows_subsystem = "windows"
 )]
 
-mod cmd;
+#[macro_use] // for macro
+extern crate diesel;
+
 mod discord;
 mod model;
+mod schema;
 
-use crate::discord::DiscordListener;
-use anyhow::{Context as _, Result};
-use std::result::Result as StdResult;
-use std::sync::Arc;
-use std::time::Duration;
-use tauri::{Webview, WebviewMut};
-use tokio::runtime::{Builder as TokioRuntimeBuilder, Runtime as TokioRuntime};
-use tokio::sync::mpsc::channel;
+use {
+    crate::discord::DiscordListener,
+    anyhow::{Context as _, Result},
+    std::{result::Result as StdResult, sync::Arc},
+    tauri::{Webview, WebviewMut},
+    tokio::{
+        runtime::{Builder as TokioRuntimeBuilder, Runtime as TokioRuntime},
+        sync::mpsc::channel,
+    },
+};
 
 struct Context {
     rt: TokioRuntime,

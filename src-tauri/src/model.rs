@@ -1,5 +1,4 @@
-use serde::Serialize;
-use serde_json::json;
+use {serde::Serialize, serde_json::json};
 
 pub struct User {
     pub icon: Option<String>,
@@ -78,4 +77,21 @@ pub fn serialize(action: ScreenAction) -> String {
     };
 
     serde_json::to_string(&json).unwrap()
+}
+
+use diesel::Queryable;
+
+#[derive(Queryable)]
+pub struct Presentation {
+    pub id: i32,
+    pub title: String,
+    pub presentor_id: i32,
+}
+
+#[derive(Queryable)]
+pub struct Presentor {
+    pub id: i32,
+    pub display_name: String,
+    pub twitter_id: String,
+    pub icon: String,
 }

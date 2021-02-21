@@ -98,6 +98,8 @@ impl EventHandler for DiscordListener {
             return;
         }
 
+        let content = message.content.trim();
+
         if self
             .inner
             .read()
@@ -117,13 +119,13 @@ impl EventHandler for DiscordListener {
                             .unwrap_or_else(|| message.author.name.clone()),
                     },
                     service: Service::Discord,
-                    content: message.content.clone(),
+                    content: content.to_string(),
                 })
                 .await
                 .ok();
         }
 
-        let mut tokens = message.content.split(" ");
+        let mut tokens = content.split(" ");
 
         let prefix = tokens.next();
         let sub_command = tokens.next();
