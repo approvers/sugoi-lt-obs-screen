@@ -55,6 +55,34 @@ impl DiscordListener {
             .context("Failed to start discord client")
     }
 
+    fn parse(&self, msg: &str) -> Option<Command> {
+        let mut tokens = msg.split(' ');
+
+        let prefix = tokens.next();
+        let sub_command = tokens.next();
+        let args = tokens.collect::<Vec<_>>();
+
+        use Command::*;
+
+        match (prefix, sub_command, args.as_slice()) {
+            (None, _, _) => None,
+            (Some(p), _, _) if p != PREFIX => None,
+
+            (_, Some("listen"), _) => Some(Listen),
+
+            (_, Some("stop_listening"), _) => Some(StopListening),
+
+            (_, Some("set_notification"), args) if args.is_empty() => {
+                Some(SetNotification(args.join(" ")))
+            }
+            (_, Some("set_notification"), _) => Some(Help),
+
+            (_, Some("clear_timeline"), _) => Some(TimelineClear),
+
+            (_, _, _) => Some(Help),
+        }
+    }
+
     async fn invoke_command(&self, ctx: &SerenityContext, message: &Message, cmd: Command) {
         use Command::*;
 
@@ -117,11 +145,21 @@ impl EventHandler for DiscordListener {
         }
 
         let content = message.content.trim();
-        let listening_channel_id = self.inner.read().listening_channel_id;
-        let webview_chan = self.ctx.webview_chan.lock().await;
+        if let Some(cmd) = self.parse(content) {
+            self.invoke_command(&ctx, &message, cmd).await;
+            return;
+        }
 
-        match (listening_channel_id, webview_chan.as_ref()) {
-            (Some(target_id), Some(chan)) if message.channel_id == target_id => {
+        let listening_channel_id = self.inner.read().listening_channel_id;
+
+        if let Some(target_id) = listening_channel_id {
+            if target_id != message.channel_id.0 {
+                return; // TODO:
+            }
+
+            let webview_chan = self.ctx.webview_chan.lock().await;
+
+            if let Some(chan) = webview_chan.as_ref() {
                 chan.send(ScreenAction::TimelinePush {
                     user: User {
                         icon: message.author.avatar_url(),
@@ -136,41 +174,11 @@ impl EventHandler for DiscordListener {
                 })
                 .await
                 .ok();
-            }
-
-            (Some(target_id), None) if message.channel_id == target_id => {
+            } else {
                 tracing::warn!(
                     "failed to send TimelinePush event because Webview was not initialized"
                 );
             }
-            _ => {}
-        };
-
-        let mut tokens = content.split(' ');
-
-        let prefix = tokens.next();
-        let sub_command = tokens.next();
-        let args = tokens.collect::<Vec<_>>();
-
-        use Command::*;
-        let run_cmd = |c| self.invoke_command(&ctx, &message, c);
-
-        match (prefix, sub_command, args.as_slice()) {
-            (None, _, _) => return,
-            (Some(p), _, _) if p != PREFIX => return,
-
-            (_, Some("listen"), _) => run_cmd(Listen).await,
-
-            (_, Some("stop_listening"), _) => run_cmd(StopListening).await,
-
-            (_, Some("set_notification"), args) if args.is_empty() => {
-                run_cmd(SetNotification(args.join(" "))).await
-            }
-            (_, Some("set_notification"), _) => run_cmd(Help).await,
-
-            (_, Some("clear_timeline"), _) => run_cmd(TimelineClear).await,
-
-            (_, _, _) => run_cmd(Help).await,
-        };
+        }
     }
 }
