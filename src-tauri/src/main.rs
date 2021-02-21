@@ -4,6 +4,8 @@
     windows_subsystem = "windows"
 )]
 
+// TODO: replace all pub -> pub(crate)
+
 #[macro_use] // for macro
 extern crate diesel;
 
@@ -12,24 +14,30 @@ mod model;
 mod schema;
 
 use {
-    crate::discord::DiscordListener,
+    crate::{discord::DiscordListener, model::ScreenAction},
     anyhow::{Context as _, Result},
+    diesel::{Connection, SqliteConnection},
     std::{result::Result as StdResult, sync::Arc},
     tauri::{Webview, WebviewMut},
     tokio::{
         runtime::{Builder as TokioRuntimeBuilder, Runtime as TokioRuntime},
-        sync::mpsc::channel,
+        sync::{
+            mpsc::{channel, Sender},
+            Mutex,
+        },
     },
 };
 
 struct Context {
     rt: TokioRuntime,
-    discord_token: String,
+    db: Mutex<SqliteConnection>,
+    webview_chan: Mutex<Option<Sender<ScreenAction>>>,
 }
 
 fn main() -> Result<()> {
     dotenv::dotenv().ok();
 
+    let database_url = std::env::var("DATABASE_URL").context("failed to get DATABASE_URL")?;
     let discord_token = std::env::var("DISCORD_TOKEN").context("failed to get DISCORD_TOKEN")?;
     let use_ansi = std::env::var("NO_COLOR").is_err();
 
@@ -43,7 +51,24 @@ fn main() -> Result<()> {
         .build()
         .context("Failed to create tokio runtime")?;
 
-    let ctx = Arc::new(Context { rt, discord_token });
+    let db = SqliteConnection::establish(&database_url).context("failed to open database")?;
+
+    let ctx = Arc::new(Context {
+        rt,
+        db: Mutex::new(db),
+        webview_chan: Mutex::new(None),
+    });
+
+    {
+        let my_ctx = Arc::clone(&ctx);
+        ctx.rt.spawn(async move {
+            DiscordListener::new(Arc::clone(&my_ctx))
+                .start(&discord_token)
+                .await
+                .context("failed to start discord listener")
+                .unwrap();
+        });
+    }
 
     tauri::AppBuilder::new()
         .setup(move |a, b| setup(Arc::clone(&ctx), a, b))
@@ -59,10 +84,8 @@ fn setup(ctx: Arc<Context>, webview: &mut Webview, _source: String) {
 
     let (tx, mut rx) = channel(10);
 
-    let token = ctx.discord_token.clone();
-    ctx.rt.spawn(async move {
-        DiscordListener::new(tx).start(&token).await.unwrap();
-    });
+    ctx.rt
+        .block_on(async { *ctx.webview_chan.lock().await = Some(tx) });
 
     ctx.rt.spawn(async move {
         while let Some(action) = rx.recv().await {

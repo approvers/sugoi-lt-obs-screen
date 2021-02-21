@@ -1,12 +1,17 @@
+use std::sync::Arc;
+
 use {
-    crate::model::{ScreenAction, Service, User},
+    crate::{
+        model::{ScreenAction, Service, User},
+        Context,
+    },
     anyhow::{Context as _, Result},
     serenity::{
         async_trait,
         model::{channel::Message, prelude::Ready},
-        prelude::{Client, Context, EventHandler},
+        prelude::{Client, Context as SerenityContext, EventHandler},
     },
-    tokio::sync::{mpsc::Sender, RwLock},
+    tokio::sync::RwLock,
 };
 
 const PREFIX: &str = "g!live";
@@ -14,6 +19,7 @@ const PREFIX: &str = "g!live";
 enum Command {
     Help,
     Listen,
+    StopListening,
     SetNotification(String),
     TimelineClear,
 }
@@ -25,13 +31,13 @@ struct DiscordListenerInner {
 
 pub struct DiscordListener {
     inner: RwLock<DiscordListenerInner>,
-    sender: Sender<ScreenAction>,
+    ctx: Arc<Context>,
 }
 
 impl DiscordListener {
-    pub fn new(sender: Sender<ScreenAction>) -> Self {
+    pub(crate) fn new(ctx: Arc<Context>) -> Self {
         Self {
-            sender,
+            ctx,
             inner: RwLock::new(DiscordListenerInner {
                 listening_channel_id: None,
                 my_id: None,
@@ -49,38 +55,50 @@ impl DiscordListener {
             .context("Failed to start discord client")
     }
 
-    async fn invoke_command(&self, ctx: &Context, message: &Message, cmd: Command) {
+    async fn invoke_command(&self, ctx: &SerenityContext, message: &Message, cmd: Command) {
         use Command::*;
 
-        let text = match cmd {
-            Help => "https://hackmd.io/@U9f9Fv6rTt2UkRA6UriFTA/BJRVQlTZO".to_string(),
+        let text_buffer;
+        let text = match (cmd, self.ctx.webview_chan.lock().await.as_ref()) {
+            (Help, _) => "https://hackmd.io/@U9f9Fv6rTt2UkRA6UriFTA/BJRVQlTZO",
 
-            Listen => {
+            (Listen, _) => {
                 let chan = message.channel_id;
                 self.inner.write().await.listening_channel_id = Some(chan.0);
 
-                let msg = format!("now listening at <#{}>", chan.0);
-                tracing::info!("{}", &msg);
+                text_buffer = format!("now listening at <#{}>", chan.0);
+                tracing::info!("{}", &text_buffer);
 
-                msg
+                text_buffer.as_str()
             }
 
-            SetNotification(text) => {
-                self.sender
+            (StopListening, _) => {
+                if self.inner.read().await.listening_channel_id.is_some() {
+                    self.inner.write().await.listening_channel_id = None;
+                    "stopped"
+                } else {
+                    "currently not listening any channel"
+                }
+            }
+
+            (SetNotification(text), Some(sender)) => {
+                sender
                     .send(ScreenAction::NotificationUpdate { text })
                     .await
                     .ok();
 
-                "set".to_string()
+                "set"
             }
 
-            TimelineClear => {
-                self.sender.send(ScreenAction::TimelineClear).await.ok();
-                "cleared".to_string()
+            (TimelineClear, Some(sender)) => {
+                sender.send(ScreenAction::TimelineClear).await.ok();
+                "cleared"
             }
+
+            (SetNotification(_), None) | (TimelineClear, None) => "webview was not ready",
         };
 
-        if let Err(e) = message.channel_id.say(&ctx, &text).await {
+        if let Err(e) = message.channel_id.say(&ctx, text).await {
             tracing::error!("failed to send message!: {:?}\n{}", e, &text);
         }
     }
@@ -88,28 +106,24 @@ impl DiscordListener {
 
 #[async_trait]
 impl EventHandler for DiscordListener {
-    async fn ready(&self, _: Context, ready: Ready) {
+    async fn ready(&self, _: SerenityContext, ready: Ready) {
         tracing::info!("DiscordBot({}) is connected!", ready.user.name);
         self.inner.write().await.my_id = Some(ready.user.id.0);
     }
 
-    async fn message(&self, ctx: Context, message: Message) {
+    async fn message(&self, ctx: SerenityContext, message: Message) {
         if self.inner.read().await.my_id.unwrap() == message.author.id.0 {
             return;
         }
 
         let content = message.content.trim();
 
-        if self
-            .inner
-            .read()
-            .await
-            .listening_channel_id
-            .map(|x| x == message.channel_id.0)
-            .unwrap_or(false)
-        {
-            self.sender
-                .send(ScreenAction::TimelinePush {
+        match (
+            self.inner.read().await.listening_channel_id,
+            self.ctx.webview_chan.lock().await.as_ref(),
+        ) {
+            (Some(target_id), Some(chan)) if message.channel_id == target_id => {
+                chan.send(ScreenAction::TimelinePush {
                     user: User {
                         icon: message.author.avatar_url(),
                         ident: None,
@@ -123,7 +137,15 @@ impl EventHandler for DiscordListener {
                 })
                 .await
                 .ok();
-        }
+            }
+
+            (Some(target_id), None) if message.channel_id == target_id => {
+                tracing::warn!(
+                    "failed to send TimelinePush event because Webview was not initialized"
+                );
+            }
+            _ => {}
+        };
 
         let mut tokens = content.split(" ");
 
@@ -135,11 +157,12 @@ impl EventHandler for DiscordListener {
         let run_cmd = |c| self.invoke_command(&ctx, &message, c);
 
         match (prefix, sub_command, args.as_slice()) {
-            // stabilize or-patterns when
             (None, _, _) => return,
             (Some(p), _, _) if p != PREFIX => return,
 
             (_, Some("listen"), _) => run_cmd(Listen).await,
+
+            (_, Some("stop_listening"), _) => run_cmd(StopListening).await,
 
             (_, Some("set_notification"), args) if args.len() > 0 => {
                 run_cmd(SetNotification(args.join(" "))).await

@@ -80,9 +80,9 @@ dependencies = [
 
 [[package]]
 name = "attohttpc"
-version = "0.16.1"
+version = "0.16.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba5b30bf3a0aead269fd5dd69b385a3e90c2b55f4f215d1bdf52c3883f5fa7fa"
+checksum = "f640b9495efcdb11764e710beba26c7a210eb09958175298a120bfe84c76a944"
 dependencies = [
  "flate2",
  "http",
