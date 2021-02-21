@@ -62,7 +62,7 @@ fn main() -> Result<()> {
     {
         let my_ctx = Arc::clone(&ctx);
         ctx.rt.spawn(async move {
-            DiscordListener::new(Arc::clone(&my_ctx))
+            DiscordListener::new(my_ctx)
                 .start(&discord_token)
                 .await
                 .context("failed to start discord listener")
@@ -94,6 +94,7 @@ fn setup(ctx: Arc<Context>, webview: &mut Webview, _source: String) {
     });
 }
 
+#[allow(clippy::unnecessary_wraps)]
 fn on_client_message(_webview: &mut Webview, _message: &str) -> StdResult<(), String> {
     Ok(())
 }

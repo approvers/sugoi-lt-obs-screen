@@ -6,12 +6,12 @@ use {
         Context,
     },
     anyhow::{Context as _, Result},
+    parking_lot::RwLock,
     serenity::{
         async_trait,
         model::{channel::Message, prelude::Ready},
         prelude::{Client, Context as SerenityContext, EventHandler},
     },
-    tokio::sync::RwLock,
 };
 
 const PREFIX: &str = "g!live";
@@ -64,7 +64,7 @@ impl DiscordListener {
 
             (Listen, _) => {
                 let chan = message.channel_id;
-                self.inner.write().await.listening_channel_id = Some(chan.0);
+                self.inner.write().listening_channel_id = Some(chan.0);
 
                 text_buffer = format!("now listening at <#{}>", chan.0);
                 tracing::info!("{}", &text_buffer);
@@ -73,8 +73,8 @@ impl DiscordListener {
             }
 
             (StopListening, _) => {
-                if self.inner.read().await.listening_channel_id.is_some() {
-                    self.inner.write().await.listening_channel_id = None;
+                if self.inner.read().listening_channel_id.is_some() {
+                    self.inner.write().listening_channel_id = None;
                     "stopped"
                 } else {
                     "currently not listening any channel"
@@ -108,20 +108,19 @@ impl DiscordListener {
 impl EventHandler for DiscordListener {
     async fn ready(&self, _: SerenityContext, ready: Ready) {
         tracing::info!("DiscordBot({}) is connected!", ready.user.name);
-        self.inner.write().await.my_id = Some(ready.user.id.0);
+        self.inner.write().my_id = Some(ready.user.id.0);
     }
 
     async fn message(&self, ctx: SerenityContext, message: Message) {
-        if self.inner.read().await.my_id.unwrap() == message.author.id.0 {
+        if self.inner.read().my_id.unwrap() == message.author.id.0 {
             return;
         }
 
         let content = message.content.trim();
+        let listening_channel_id = self.inner.read().listening_channel_id;
+        let webview_chan = self.ctx.webview_chan.lock().await;
 
-        match (
-            self.inner.read().await.listening_channel_id,
-            self.ctx.webview_chan.lock().await.as_ref(),
-        ) {
+        match (listening_channel_id, webview_chan.as_ref()) {
             (Some(target_id), Some(chan)) if message.channel_id == target_id => {
                 chan.send(ScreenAction::TimelinePush {
                     user: User {
@@ -147,7 +146,7 @@ impl EventHandler for DiscordListener {
             _ => {}
         };
 
-        let mut tokens = content.split(" ");
+        let mut tokens = content.split(' ');
 
         let prefix = tokens.next();
         let sub_command = tokens.next();
@@ -164,7 +163,7 @@ impl EventHandler for DiscordListener {
 
             (_, Some("stop_listening"), _) => run_cmd(StopListening).await,
 
-            (_, Some("set_notification"), args) if args.len() > 0 => {
+            (_, Some("set_notification"), args) if args.is_empty() => {
                 run_cmd(SetNotification(args.join(" "))).await
             }
             (_, Some("set_notification"), _) => run_cmd(Help).await,

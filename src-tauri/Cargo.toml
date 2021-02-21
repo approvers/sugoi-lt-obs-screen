@@ -19,10 +19,11 @@ dotenv = "0.15"
 anyhow = "1.0"
 regex = "1.4"
 diesel = { version = "1.4", features = [ "sqlite" ] }
+parking_lot = "0.11.1"
 
   [dependencies.tokio]
   version = "1.2"
-  features = [ "rt-multi-thread", "time" ]
+  features = [ "rt-multi-thread", "parking_lot" ]
 
   [dependencies.serenity]
   version = "0.10"
