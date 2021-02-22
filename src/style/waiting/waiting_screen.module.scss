@@ -68,4 +68,22 @@ $letter_space: 0.2em;
     letter-spacing: $letter_space;
     margin-bottom: 1em;
   }
+  &_wrapper {
+    & > *:not(:last-child) {
+      border-bottom: 2px solid back-color("dark");
+    }
+  }
+  &_element {
+    margin: 0.5em 0;
+    padding: 0.5em 0;
+
+    &_presenter {
+      font-size: 1.2em;
+      margin-bottom: 0.2em;
+    }
+    &_title {
+      @include sub-title;
+      line-height: 120%;
+    }
+  }
 }
