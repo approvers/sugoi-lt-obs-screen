@@ -10,7 +10,7 @@ function App() {
 
   return (
     <div className={styles.screen_container}>
-      <WaitingScreen />
+      <WaitingScreen state={state}/>
       {/*<LTScreen state={state} />*/}
     </div>
   );

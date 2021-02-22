@@ -35,6 +35,29 @@ export const initialState: ScreenData = {
     title: "いつの間にか議事録に「受胎宣告」と書いていた話",
     icon_fit_position: 0.6,
   },
+  pending_presenter: [
+    {
+      presenter: {
+        name: "フライさん",
+        identifier: "loxygen_k",
+      },
+      title: "いつの間にか議事録に「受胎宣告」と書いていた話"
+    },
+    {
+      presenter: {
+        name: "Hoge F. Piyo",
+        identifier: "hogepiyo",
+      },
+      title: "突然現れ突然消えた「受胎宣告」― 一瞬の間に何があったのか"
+    },
+    {
+      presenter: {
+        name: "Foo B. Corge",
+        identifier: "foo_corge",
+      },
+      title: "「受胎宣告」事件について考える"
+    },
+  ],
   timeline: [
     {
       service: "youtube",
