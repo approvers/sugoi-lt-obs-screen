@@ -35,7 +35,7 @@ export const initialState: ScreenData = {
     title: "いつの間にか議事録に「受胎宣告」と書いていた話",
     icon_fit_position: 0.6,
   },
-  pending_presenter: [
+  pending_presentation: [
     {
       presenter: {
         name: "フライさん",
@@ -89,7 +89,7 @@ export const initialState: ScreenData = {
       content: "Some random content here",
     },
   ],
-  notification: "[Notification]",
+  notification: "開始までしばらくおまちください",
 };
 
 export function reducer(state: ScreenData, action: Action): ScreenData {
