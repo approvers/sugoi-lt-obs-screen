@@ -27,26 +27,45 @@ $letter_space: 0.2em;
 
 .title {
   text-align: center;
+  &_border {
+    margin: 5em;
+    padding: 5em;
+    border-right: 2px solid back-color("dark");
+  }
   &_logo {
     width: 10em;
     height: 10em;
     object-fit: contain;
     margin-bottom: 2em;
   }
+  &_caption {
+    letter-spacing: $letter_space;
+    margin-bottom: 1.25em;
+    opacity: 85%;
+  }
   &_subtitle {
     @include sub-title;
     text-shadow: unset;
-    letter-spacing: $letter_space;
+    letter-spacing: calc(#{$letter_space} / 2);
+    margin-top: 0.1em;
   }
   &_title {
     @include title;
     text-shadow: unset;
     letter-spacing: $letter_space;
-    margin-top: 0.3em;
   }
   &_message {
     @include sub-title;
     margin-top: 2.5em;
     opacity: 75%;
+  }
+}
+
+.list {
+  width: 30em;
+  &_title {
+    @include sub-title;
+    letter-spacing: $letter_space;
+    margin-bottom: 1em;
   }
 }
