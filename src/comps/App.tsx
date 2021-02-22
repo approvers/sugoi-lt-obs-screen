@@ -1,18 +1,16 @@
 import React from "react";
-import { Notification } from "./parts/Notification";
-import { Main } from "./parts/Main";
-import { Footer } from "./parts/Footer";
-import { Action, initialState, reducer } from "../lib/data/reducer";
+import { initialState, reducer } from "../lib/data/reducer";
+import {LTScreen} from "./ltscreen/LTScreen";
+
+import styles from "../style/app.module.scss";
 
 function App() {
   const [state, dispatch] = React.useReducer(reducer, initialState);
 
   return (
-    <>
-      <Notification notification={state.notification ?? ""} />
-      <Main timeline={state.timeline} />
-      <Footer presentation={state.presentation} />
-    </>
+    <div className={styles.screen_container}>
+      <LTScreen state={state} />
+    </div>
   );
 }
 

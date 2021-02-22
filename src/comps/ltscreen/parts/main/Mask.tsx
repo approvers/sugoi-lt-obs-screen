@@ -1,6 +1,6 @@
 import * as React from "react";
-import styles from "../../../style/comps/main.module.scss";
-import { useWindowDimensions } from "../../../lib/WindowHooks";
+import styles from "../../../../style/ltscreen/main.module.scss";
+import { useWindowDimensions } from "../../../../lib/WindowHooks";
 
 export const Mask = () => {
   const { width } = useWindowDimensions();
