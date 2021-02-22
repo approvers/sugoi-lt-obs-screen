@@ -9,9 +9,9 @@ type LTScreenProps = {
 };
 
 export const LTScreen: React.FC<LTScreenProps> = ({state}) => (
-  <>
+  <div>
     <Notification notification={state.notification ?? ""} />
     <Main timeline={state.timeline} />
     <Footer presentation={state.presentation} />
-  </>
+  </div>
 );
