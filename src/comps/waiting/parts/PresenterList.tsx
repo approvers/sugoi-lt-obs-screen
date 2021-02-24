@@ -9,17 +9,15 @@ type PresenterListProps = {
 export const PresenterList: React.FC<PresenterListProps> = ({
   presentations,
 }) => {
-  if(presentations.length === 0) return <></>;
+  if (presentations.length === 0) return <></>;
 
   return (
     <div className={styles.list}>
       <p className={styles.list_title}>今後の登壇予定</p>
       <div className={styles.list_wrapper}>
-        {
-          presentations.map(
-            (elem, index) => (<PresenterListElement key={index} presentation={elem}/>)
-          )
-        }
+        {presentations.map((elem, index) => (
+          <PresenterListElement key={index} presentation={elem} />
+        ))}
       </div>
     </div>
   );
