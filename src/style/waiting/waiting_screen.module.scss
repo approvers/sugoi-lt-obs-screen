@@ -22,11 +22,11 @@ $letter_space: 0.2em;
   height: 100%;
   object-fit: cover;
 
-  z-index: -1;
 }
 
 .title {
   text-align: center;
+  z-index: 1;
   &_border {
     margin: 5em;
     padding: 5em;
@@ -63,6 +63,7 @@ $letter_space: 0.2em;
 
 .list {
   width: 30em;
+  z-index: 1;
   &_title {
     @include sub-title;
     letter-spacing: $letter_space;
