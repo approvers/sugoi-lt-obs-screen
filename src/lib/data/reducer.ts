@@ -22,7 +22,19 @@ export type Action =
   | {
       type: "timeline.flush";
       args: never;
-    };
+    }
+  | {
+      type: "waiting.message.update";
+      args: {
+        new: string;
+      }
+  }
+  | {
+      type: "waiting.pending.update";
+      args: {
+        new: Presentation[];
+      }
+  };
 
 export const initialState: ScreenData = {
   presentation: {
@@ -35,6 +47,29 @@ export const initialState: ScreenData = {
     title: "いつの間にか議事録に「受胎宣告」と書いていた話",
     icon_fit_position: 0.6,
   },
+  pending_presentation: [
+    {
+      presenter: {
+        name: "フライさん",
+        identifier: "loxygen_k",
+      },
+      title: "いつの間にか議事録に「受胎宣告」と書いていた話"
+    },
+    {
+      presenter: {
+        name: "Hoge F. Piyo",
+        identifier: "hogepiyo",
+      },
+      title: "突然現れ突然消えた「受胎宣告」― 一瞬の間に何があったのか"
+    },
+    {
+      presenter: {
+        name: "Foo B. Corge",
+        identifier: "foo_corge",
+      },
+      title: "「受胎宣告」事件について考える"
+    },
+  ],
   timeline: [
     {
       service: "youtube",
@@ -66,12 +101,13 @@ export const initialState: ScreenData = {
       content: "Some random content here",
     },
   ],
-  notification: "[Notification]",
+  notification: "開始までしばらくおまちください",
 };
 
 export function reducer(state: ScreenData, action: Action): ScreenData {
   switch (action.type) {
     case "notification.update":
+    case "waiting.message.update":
       return {
         ...state,
         notification: action.args.new,
@@ -91,6 +127,11 @@ export function reducer(state: ScreenData, action: Action): ScreenData {
         ...state,
         presentation: action.args.new,
       };
+    case "waiting.pending.update":
+      return {
+        ...state,
+        pending_presentation: action.args.new
+      }
   }
   return state;
 }

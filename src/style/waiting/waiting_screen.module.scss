@@ -1,0 +1,89 @@
+@import "../color.variables";
+@import "../layout.variables";
+
+$letter_space: 0.2em;
+
+.wrapper {
+  display: flex;
+  width: 100%;
+  height: 100%;
+
+  justify-content: center;
+  align-items: center;
+
+  @include fore("light");
+}
+
+.background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+
+  z-index: -1;
+}
+
+.title {
+  text-align: center;
+  &_border {
+    margin: 5em;
+    padding: 5em;
+    border-right: 2px solid back-color("dark");
+  }
+  &_logo {
+    width: 10em;
+    height: 10em;
+    object-fit: contain;
+    margin-bottom: 2em;
+  }
+  &_caption {
+    letter-spacing: $letter_space;
+    margin-bottom: 1.25em;
+    opacity: 85%;
+  }
+  &_subtitle {
+    @include sub-title;
+    text-shadow: unset;
+    letter-spacing: calc(#{$letter_space} / 2);
+    margin-top: 0.1em;
+  }
+  &_title {
+    @include title;
+    text-shadow: unset;
+    letter-spacing: $letter_space;
+  }
+  &_message {
+    @include sub-title;
+    margin-top: 2.5em;
+    opacity: 75%;
+  }
+}
+
+.list {
+  width: 30em;
+  &_title {
+    @include sub-title;
+    letter-spacing: $letter_space;
+    margin-bottom: 1em;
+  }
+  &_wrapper {
+    & > *:not(:last-child) {
+      border-bottom: 2px solid back-color("dark");
+    }
+  }
+  &_element {
+    margin: 0.5em 0;
+    padding: 0.5em 0;
+
+    &_presenter {
+      font-size: 1.2em;
+      margin-bottom: 0.2em;
+    }
+    &_title {
+      @include sub-title;
+      line-height: 120%;
+    }
+  }
+}

@@ -20,6 +20,7 @@ export type TimelineCard = {
 
 export type ScreenData = {
   presentation: Presentation;
+  pending_presentation: Presentation[],
   timeline: TimelineCard[];
   notification?: string;
 };
