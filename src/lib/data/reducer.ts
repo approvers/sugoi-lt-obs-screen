@@ -1,3 +1,4 @@
+import {Dispatch, useReducer} from "react";
 import {Page, Presentation, ScreenData, TimelineCard} from "./ScreenData";
 
 export type Action =
@@ -42,8 +43,14 @@ export type Action =
       }
   }
   | {
+      type: "screen.startTransition" // Internal use
+      args: {
+        new: Page,
+      };
+  }
+  | {
       type: "screen.finishTransition" // Internal use
-      args: never;
+      args: never | undefined;
   }
 
 export const initialState: ScreenData = {
@@ -114,11 +121,29 @@ export const initialState: ScreenData = {
   notification: "開始までしばらくおまちください",
   transition: {
     current: "WaitingScreen",
-    to: undefined,
   }
 };
 
-export function reducer(state: ScreenData, action: Action): ScreenData {
+function middleware(state: ScreenData, action: Action, dispatch: Dispatch<Action>): ScreenData {
+  switch (action.type) {
+    case "screen.update":
+      setTimeout(() => dispatch(
+        {
+          type: "screen.finishTransition",
+          args: undefined,
+        }
+      ), 2000);
+      dispatch({
+        type: "screen.startTransition",
+        args: {
+          new: action.args.new,
+        }
+      });
+  }
+  return state;
+}
+
+function reducer(state: ScreenData, action: Action): ScreenData {
   switch (action.type) {
     case "notification.update":
     case "waiting.message.update":
@@ -147,11 +172,13 @@ export function reducer(state: ScreenData, action: Action): ScreenData {
         pending_presentation: action.args.new
       }
     case "screen.update":
+      return state;
+    case "screen.startTransition":
       return {
         ...state,
         transition: {
-          current: state.transition.current,
-          to: action.args.new
+          ...state.transition,
+          to: action.args.new,
         }
       }
     case "screen.finishTransition":
@@ -164,4 +191,15 @@ export function reducer(state: ScreenData, action: Action): ScreenData {
       }
   }
   return state;
+}
+
+export function useReducerWithMiddleware(): [ScreenData, (action: Action) => void] {
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  const dispatchWithMiddleware = (action: Action) => {
+    middleware(state, action, dispatch);
+    dispatch(action);
+  }
+
+  return [state, dispatchWithMiddleware]
 }
