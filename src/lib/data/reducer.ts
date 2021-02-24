@@ -1,4 +1,4 @@
-import { Presentation, ScreenData, TimelineCard } from "./ScreenData";
+import {Page, Presentation, ScreenData, TimelineCard} from "./ScreenData";
 
 export type Action =
   | {
@@ -34,7 +34,17 @@ export type Action =
       args: {
         new: Presentation[];
       }
-  };
+  }
+  | {
+      type: "screen.update";
+      args: {
+        new: Page
+      }
+  }
+  | {
+      type: "screen.finishTransition" // Internal use
+      args: never;
+  }
 
 export const initialState: ScreenData = {
   presentation: {
@@ -102,6 +112,10 @@ export const initialState: ScreenData = {
     },
   ],
   notification: "開始までしばらくおまちください",
+  transition: {
+    current: "WaitingScreen",
+    to: undefined,
+  }
 };
 
 export function reducer(state: ScreenData, action: Action): ScreenData {
@@ -131,6 +145,22 @@ export function reducer(state: ScreenData, action: Action): ScreenData {
       return {
         ...state,
         pending_presentation: action.args.new
+      }
+    case "screen.update":
+      return {
+        ...state,
+        transition: {
+          current: state.transition.current,
+          to: action.args.new
+        }
+      }
+    case "screen.finishTransition":
+      return {
+        ...state,
+        transition: {
+          current: state.transition.to ?? state.transition.current,
+          to: undefined
+        }
       }
   }
   return state;
