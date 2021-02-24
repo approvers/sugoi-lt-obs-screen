@@ -27,11 +27,6 @@ $letter_space: 0.2em;
 .title {
   text-align: center;
   z-index: 1;
-  &_border {
-    margin: 5em;
-    padding: 5em;
-    border-right: 2px solid back-color("dark");
-  }
   &_logo {
     width: 10em;
     height: 10em;
@@ -62,7 +57,10 @@ $letter_space: 0.2em;
 }
 
 .list {
-  width: 30em;
+  width: 35em;
+  margin-left: 5em;
+  padding-left: 5em;
+  border-left: 2px solid back-color("dark");
   z-index: 1;
   &_title {
     @include sub-title;
