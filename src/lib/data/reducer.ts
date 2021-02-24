@@ -22,7 +22,19 @@ export type Action =
   | {
       type: "timeline.flush";
       args: never;
-    };
+    }
+  | {
+      type: "waiting.message.update";
+      args: {
+        new: string;
+      }
+  }
+  | {
+      type: "waiting.pending.update";
+      args: {
+        new: Presentation[];
+      }
+  };
 
 export const initialState: ScreenData = {
   presentation: {
@@ -95,6 +107,7 @@ export const initialState: ScreenData = {
 export function reducer(state: ScreenData, action: Action): ScreenData {
   switch (action.type) {
     case "notification.update":
+    case "waiting.message.update":
       return {
         ...state,
         notification: action.args.new,
@@ -114,6 +127,11 @@ export function reducer(state: ScreenData, action: Action): ScreenData {
         ...state,
         presentation: action.args.new,
       };
+    case "waiting.pending.update":
+      return {
+        ...state,
+        pending_presentation: action.args.new
+      }
   }
   return state;
 }
