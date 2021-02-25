@@ -12,11 +12,13 @@ extern crate diesel;
 mod discord;
 mod model;
 mod schema;
+mod twitter;
 
 use {
-    crate::{discord::DiscordListener, model::ScreenAction},
+    crate::{discord::DiscordListener, model::ScreenAction, twitter::TwitterClient},
     anyhow::{Context as _, Result},
     diesel::{Connection, SqliteConnection},
+    egg_mode::{KeyPair, Token},
     std::{result::Result as StdResult, sync::Arc},
     tauri::{Webview, WebviewMut},
     tokio::{
@@ -34,12 +36,30 @@ struct Context {
     webview_chan: Mutex<Option<Sender<ScreenAction>>>,
 }
 
+fn env_var(name: &str) -> String {
+    match std::env::var(name) {
+        Ok(v) => v,
+        Err(_) => panic!("environment variable {} not set", name),
+    }
+}
+
 fn main() -> Result<()> {
     dotenv::dotenv().ok();
 
-    let database_url = std::env::var("DATABASE_URL").context("failed to get DATABASE_URL")?;
-    let discord_token = std::env::var("DISCORD_TOKEN").context("failed to get DISCORD_TOKEN")?;
+    let database_url = env_var("DATABASE_URL");
+    let discord_token = env_var("DISCORD_TOKEN");
     let use_ansi = std::env::var("NO_COLOR").is_err();
+
+    let twitter_token = Token::Access {
+        consumer: KeyPair {
+            key: env_var("TWITTER_CONSUMER_KEY").into(),
+            secret: env_var("TWITTER_CONSUMER_SECRET").into(),
+        },
+        access: KeyPair {
+            key: env_var("TWITTER_ACCESS_KEY").into(),
+            secret: env_var("TWITTER_ACCESS_SECRET").into(),
+        },
+    };
 
     tracing_subscriber::fmt()
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
@@ -67,6 +87,13 @@ fn main() -> Result<()> {
                 .await
                 .context("failed to start discord listener")
                 .unwrap();
+        });
+    }
+
+    {
+        let my_ctx = Arc::clone(&ctx);
+        ctx.rt.spawn(async move {
+            TwitterClient::new(my_ctx, twitter_token).start().await;
         });
     }
 

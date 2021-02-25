@@ -128,6 +128,7 @@ impl DiscordListener {
                 "cleared"
             }
 
+            // TODO: lock during switching (2sec)
             (Pause, Some(sender)) => {
                 sender
                     .send(ScreenAction::SwitchPage(Page::WaitingScreen))

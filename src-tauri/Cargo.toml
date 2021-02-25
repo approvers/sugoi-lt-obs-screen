@@ -19,6 +19,12 @@ dotenv = "0.15"
 anyhow = "1.0"
 regex = "1.4"
 parking_lot = "0.11.1"
+tokio-stream = "0.1.3"
+
+  [dependencies.egg-mode]
+  git = "https://github.com/egg-mode-rs/egg-mode.git"
+  default_features = false
+  features = [ "rustls" ]
 
   [dependencies.libsqlite3-sys]
   version = "0.18"
