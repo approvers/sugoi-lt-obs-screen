@@ -5,10 +5,10 @@ import { Main } from "./parts/Main";
 import { Footer } from "./parts/Footer";
 
 type LTScreenProps = {
-  state: ScreenData
+  state: ScreenData;
 };
 
-export const LTScreen: React.FC<LTScreenProps> = ({state}) => (
+export const LTScreen: React.FC<LTScreenProps> = ({ state }) => (
   <div>
     <Notification notification={state.notification ?? ""} />
     <Main timeline={state.timeline} />

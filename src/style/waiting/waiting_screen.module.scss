@@ -22,11 +22,11 @@ $letter_space: 0.2em;
   height: 100%;
   object-fit: cover;
 
-  z-index: -1;
 }
 
 .title {
   text-align: center;
+  z-index: 1;
   &_logo {
     width: 10em;
     height: 10em;
@@ -61,6 +61,7 @@ $letter_space: 0.2em;
   margin-left: 5em;
   padding-left: 5em;
   border-left: 2px solid back-color("dark");
+  z-index: 1;
   &_title {
     @include sub-title;
     letter-spacing: $letter_space;

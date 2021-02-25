@@ -18,9 +18,15 @@ export type TimelineCard = {
   content: string;
 };
 
+export type Page = "LTScreen" | "WaitingScreen";
+
 export type ScreenData = {
   presentation: Presentation;
-  pending_presentation: Presentation[],
+  pending_presentation: Presentation[];
   timeline: TimelineCard[];
   notification?: string;
+  transition: {
+    current: Page;
+    to?: Page;
+  };
 };

@@ -1,4 +1,5 @@
-import { Presentation, ScreenData, TimelineCard } from "./ScreenData";
+import { Dispatch, useReducer } from "react";
+import { Page, Presentation, ScreenData, TimelineCard } from "./ScreenData";
 
 export type Action =
   | {
@@ -27,14 +28,30 @@ export type Action =
       type: "waiting.message.update";
       args: {
         new: string;
-      }
-  }
+      };
+    }
   | {
       type: "waiting.pending.update";
       args: {
         new: Presentation[];
-      }
-  };
+      };
+    }
+  | {
+      type: "screen.update";
+      args: {
+        new: Page;
+      };
+    }
+  | {
+      type: "screen.startTransition"; // Internal use
+      args: {
+        new: Page;
+      };
+    }
+  | {
+      type: "screen.finishTransition"; // Internal use
+      args: never | undefined;
+    };
 
 export const initialState: ScreenData = {
   presentation: {
@@ -53,21 +70,21 @@ export const initialState: ScreenData = {
         name: "フライさん",
         identifier: "loxygen_k",
       },
-      title: "いつの間にか議事録に「受胎宣告」と書いていた話"
+      title: "いつの間にか議事録に「受胎宣告」と書いていた話",
     },
     {
       presenter: {
         name: "Hoge F. Piyo",
         identifier: "hogepiyo",
       },
-      title: "突然現れ突然消えた「受胎宣告」― 一瞬の間に何があったのか"
+      title: "突然現れ突然消えた「受胎宣告」― 一瞬の間に何があったのか",
     },
     {
       presenter: {
         name: "Foo B. Corge",
         identifier: "foo_corge",
       },
-      title: "「受胎宣告」事件について考える"
+      title: "「受胎宣告」事件について考える",
     },
   ],
   timeline: [
@@ -102,9 +119,37 @@ export const initialState: ScreenData = {
     },
   ],
   notification: "開始までしばらくおまちください",
+  transition: {
+    current: "WaitingScreen",
+  },
 };
 
-export function reducer(state: ScreenData, action: Action): ScreenData {
+function middleware(
+  state: ScreenData,
+  action: Action,
+  dispatch: Dispatch<Action>
+): ScreenData {
+  switch (action.type) {
+    case "screen.update":
+      setTimeout(
+        () =>
+          dispatch({
+            type: "screen.finishTransition",
+            args: undefined,
+          }),
+        2000
+      );
+      dispatch({
+        type: "screen.startTransition",
+        args: {
+          new: action.args.new,
+        },
+      });
+  }
+  return state;
+}
+
+function reducer(state: ScreenData, action: Action): ScreenData {
   switch (action.type) {
     case "notification.update":
     case "waiting.message.update":
@@ -130,8 +175,40 @@ export function reducer(state: ScreenData, action: Action): ScreenData {
     case "waiting.pending.update":
       return {
         ...state,
-        pending_presentation: action.args.new
-      }
+        pending_presentation: action.args.new,
+      };
+    case "screen.update":
+      return state;
+    case "screen.startTransition":
+      return {
+        ...state,
+        transition: {
+          ...state.transition,
+          to: action.args.new,
+        },
+      };
+    case "screen.finishTransition":
+      return {
+        ...state,
+        transition: {
+          current: state.transition.to ?? state.transition.current,
+          to: undefined,
+        },
+      };
   }
   return state;
+}
+
+export function useReducerWithMiddleware(): [
+  ScreenData,
+  (action: Action) => void
+] {
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  const dispatchWithMiddleware = (action: Action) => {
+    middleware(state, action, dispatch);
+    dispatch(action);
+  };
+
+  return [state, dispatchWithMiddleware];
 }
