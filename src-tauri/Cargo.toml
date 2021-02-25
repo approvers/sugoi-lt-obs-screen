@@ -18,8 +18,15 @@ tracing-subscriber = "0.2"
 dotenv = "0.15"
 anyhow = "1.0"
 regex = "1.4"
-diesel = { version = "1.4", features = [ "sqlite" ] }
 parking_lot = "0.11.1"
+
+  [dependencies.libsqlite3-sys]
+  version = "0.18"
+  features = [ "min_sqlite_version_3_7_16", "bundled" ]
+
+  [dependencies.diesel]
+  version = "1.4"
+  features = [ "sqlite" ]
 
   [dependencies.tokio]
   version = "1.2"
