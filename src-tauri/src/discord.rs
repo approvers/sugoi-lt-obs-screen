@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use {
     crate::{
-        model::{ScreenAction, Service, User},
+        model::{Page, ScreenAction, Service, User},
         Context,
     },
     anyhow::{Context as _, Result},
@@ -22,6 +22,8 @@ enum Command {
     StopListening,
     SetNotification(String),
     TimelineClear,
+    Pause,
+    Resume,
 }
 
 struct DiscordListenerInner {
@@ -79,6 +81,9 @@ impl DiscordListener {
 
             (_, Some("clear_timeline"), _) => Some(TimelineClear),
 
+            (_, Some("pause"), _) => Some(Pause),
+            (_, Some("resume"), _) => Some(Resume),
+
             (_, _, _) => Some(Help),
         }
     }
@@ -123,7 +128,23 @@ impl DiscordListener {
                 "cleared"
             }
 
-            (SetNotification(_), None) | (TimelineClear, None) => "webview was not ready",
+            (Pause, Some(sender)) => {
+                sender
+                    .send(ScreenAction::SwitchPage(Page::WaitingScreen))
+                    .await
+                    .ok();
+                "switching requested"
+            }
+
+            (Resume, Some(sender)) => {
+                sender
+                    .send(ScreenAction::SwitchPage(Page::LTScreen))
+                    .await
+                    .ok();
+                "switching requested"
+            }
+
+            (_, None) => "webview was not ready",
         };
 
         if let Err(e) = message.channel_id.say(&ctx, text).await {

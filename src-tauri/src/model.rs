@@ -14,6 +14,12 @@ pub enum Service {
     Youtube,
 }
 
+#[derive(Serialize)]
+pub enum Page {
+    LTScreen,
+    WaitingScreen,
+}
+
 pub enum ScreenAction {
     TimelineClear,
     TimelinePush {
@@ -28,6 +34,7 @@ pub enum ScreenAction {
         presentor: User,
         title: String,
     },
+    SwitchPage(Page),
 }
 
 pub fn serialize(action: ScreenAction) -> String {
@@ -72,6 +79,13 @@ pub fn serialize(action: ScreenAction) -> String {
                     },
                     "title": title
                 }
+            }
+        }),
+
+        SwitchPage(page) => json!({
+            "type": "screen.update",
+            "args": {
+                "new": page
             }
         }),
     };
