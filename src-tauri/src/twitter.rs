@@ -3,6 +3,7 @@ use {
         model::{ScreenAction, Service, User},
         Context,
     },
+    anyhow::anyhow,
     egg_mode::{
         stream::{filter, StreamMessage},
         tweet::Tweet,
@@ -14,12 +15,12 @@ use {
 
 const HASHTAGS: &[&str] = &["#限界LT"];
 
-pub(crate) struct TwitterClient {
+pub(crate) struct TwitterListener {
     ctx: Arc<Context>,
     token: Token,
 }
 
-impl TwitterClient {
+impl TwitterListener {
     pub(crate) fn new(ctx: Arc<Context>, token: Token) -> Self {
         Self { ctx, token }
     }
@@ -32,7 +33,10 @@ impl TwitterClient {
                 Ok(StreamMessage::Tweet(tweet)) => self.on_tweet(tweet).await,
                 Ok(_) => {}
 
-                Err(e) => tracing::warn!("Twitter stream returned an error: {}", e),
+                Err(e) => {
+                    tracing::warn!("Twitter stream returned an error: {:#?}", anyhow!(e));
+                    break;
+                }
             }
         }
     }

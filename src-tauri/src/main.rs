@@ -13,9 +13,13 @@ mod discord;
 mod model;
 mod schema;
 mod twitter;
+mod youtube;
 
 use {
-    crate::{discord::DiscordListener, model::ScreenAction, twitter::TwitterClient},
+    crate::{
+        discord::DiscordListener, model::ScreenAction, twitter::TwitterListener,
+        youtube::YoutubeListener,
+    },
     anyhow::{Context as _, Result},
     diesel::{Connection, SqliteConnection},
     egg_mode::{KeyPair, Token},
@@ -93,7 +97,17 @@ fn main() -> Result<()> {
     {
         let my_ctx = Arc::clone(&ctx);
         ctx.rt.spawn(async move {
-            TwitterClient::new(my_ctx, twitter_token).start().await;
+            TwitterListener::new(my_ctx, twitter_token).start().await;
+        });
+    }
+
+    {
+        let my_ctx = Arc::clone(&ctx);
+        ctx.rt.spawn(async move {
+            // TODO: replace video id
+            YoutubeListener::new(my_ctx, "5VoIGGMYrDg".to_string())
+                .start()
+                .await;
         });
     }
 
