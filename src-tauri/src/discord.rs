@@ -74,7 +74,7 @@ impl DiscordListener {
 
             (_, Some("stop_listening"), _) => Some(StopListening),
 
-            (_, Some("set_notification"), args) if args.is_empty() => {
+            (_, Some("set_notification"), args) if !args.is_empty() => {
                 Some(SetNotification(args.join(" ")))
             }
             (_, Some("set_notification"), _) => Some(Help),
