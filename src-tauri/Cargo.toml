@@ -28,14 +28,6 @@ futures = "0.3"
   default_features = false
   features = [ "rustls" ]
 
-  [dependencies.libsqlite3-sys]
-  version = "0.18"
-  features = [ "min_sqlite_version_3_7_16", "bundled" ]
-
-  [dependencies.diesel]
-  version = "1.4"
-  features = [ "sqlite" ]
-
   [dependencies.tokio]
   version = "1.2"
   features = [ "rt-multi-thread", "parking_lot" ]

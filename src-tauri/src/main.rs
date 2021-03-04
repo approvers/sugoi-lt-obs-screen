@@ -6,12 +6,8 @@
 
 // TODO: replace all pub -> pub(crate)
 
-#[macro_use] // for macro
-extern crate diesel;
-
 mod discord;
 mod model;
-mod schema;
 mod twitter;
 mod youtube;
 
@@ -21,7 +17,6 @@ use {
         youtube::YoutubeListener,
     },
     anyhow::{Context as _, Result},
-    diesel::{Connection, SqliteConnection},
     egg_mode::{KeyPair, Token},
     std::{result::Result as StdResult, sync::Arc},
     tauri::{Webview, WebviewMut},
@@ -36,7 +31,6 @@ use {
 
 struct Context {
     rt: TokioRuntime,
-    db: Mutex<SqliteConnection>,
     webview_chan: Mutex<Option<Sender<ScreenAction>>>,
 }
 
@@ -50,7 +44,6 @@ fn env_var(name: &str) -> String {
 fn main() -> Result<()> {
     dotenv::dotenv().ok();
 
-    let database_url = env_var("DATABASE_URL");
     let discord_token = env_var("DISCORD_TOKEN");
     let use_ansi = std::env::var("NO_COLOR").is_err();
 
@@ -75,11 +68,8 @@ fn main() -> Result<()> {
         .build()
         .context("Failed to create tokio runtime")?;
 
-    let db = SqliteConnection::establish(&database_url).context("failed to open database")?;
-
     let ctx = Arc::new(Context {
         rt,
-        db: Mutex::new(db),
         webview_chan: Mutex::new(None),
     });
 
