@@ -3,7 +3,6 @@ use {
         model::{ScreenAction, Service, User},
         Context,
     },
-    anyhow::anyhow,
     egg_mode::{
         stream::{filter, StreamMessage},
         tweet::Tweet,
@@ -34,7 +33,7 @@ impl TwitterListener {
                 Ok(_) => {}
 
                 Err(e) => {
-                    tracing::warn!("Twitter stream returned an error: {:#?}", anyhow!(e));
+                    tracing::warn!("Twitter stream returned an error: {:#?}", e);
                     break;
                 }
             }
