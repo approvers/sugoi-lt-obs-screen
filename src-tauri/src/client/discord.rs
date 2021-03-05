@@ -6,7 +6,9 @@ use {
         Context,
     },
     anyhow::{Context as _, Result},
+    lazy_static::lazy_static,
     parking_lot::RwLock,
+    regex::Regex,
     serenity::{
         async_trait,
         model::{channel::Message, prelude::Ready},
@@ -16,14 +18,55 @@ use {
 
 const PREFIX: &str = "g!live";
 
-enum Command {
-    Help,
+fn extract_user_id_from_mention(mention_text: &str) -> Option<u64> {
+    lazy_static! {
+        static ref MENTION_REGEX: Regex = Regex::new(r#"<@(?P<id>\d+)>"#).unwrap();
+    }
+
+    let id_str = MENTION_REGEX
+        .captures(mention_text)?
+        .name("id")
+        .unwrap()
+        .as_str();
+
+    Some(id_str.parse().ok()?)
+}
+
+#[test]
+fn test_extract_user_id() {
+    assert_eq!(extract_user_id_from_mention("<@123>"), Some(123));
+    assert_eq!(extract_user_id_from_mention("<@012345>"), Some(12345));
+    assert_eq!(extract_user_id_from_mention("hogehoge"), None);
+}
+
+enum Command<'a> {
+    Help(Option<&'static str>), // additional error message if available
     Listen,
     StopListening,
     SetNotification(String),
     TimelineClear,
     Pause,
     Resume,
+    Presentation(PresentationCommand<'a>),
+}
+
+enum PresentationCommand<'a> {
+    Push {
+        user_mention: &'a str,
+        title: String,
+    },
+    Reorder {
+        map: Vec<usize>,
+    },
+    Delete {
+        index: usize,
+    },
+    Update {
+        index: usize,
+        new_title: &'a str,
+    },
+    List,
+    Pop,
 }
 
 struct DiscordListenerInner {
@@ -57,7 +100,7 @@ impl DiscordListener {
             .context("Failed to start discord client")
     }
 
-    fn parse(&self, msg: &str) -> Option<Command> {
+    fn parse<'a>(&self, msg: &'a str) -> Option<Command<'a>> {
         let mut tokens = msg.split(' ');
 
         let prefix = tokens.next();
@@ -65,35 +108,86 @@ impl DiscordListener {
         let args = tokens.collect::<Vec<_>>();
 
         use Command::*;
+        use PresentationCommand::*;
 
         match (prefix, sub_command, args.as_slice()) {
             (None, _, _) => None,
             (Some(p), _, _) if p != PREFIX => None,
 
-            (_, Some("listen"), _) => Some(Listen),
-
-            (_, Some("stop_listening"), _) => Some(StopListening),
-
-            (_, Some("set_notification"), args) if !args.is_empty() => {
-                Some(SetNotification(args.join(" ")))
-            }
-            (_, Some("set_notification"), _) => Some(Help),
-
-            (_, Some("clear_timeline"), _) => Some(TimelineClear),
-
             (_, Some("pause"), _) => Some(Pause),
             (_, Some("resume"), _) => Some(Resume),
+            (_, Some("listen"), _) => Some(Listen),
+            (_, Some("stop_listening"), _) => Some(StopListening),
+            (_, Some("clear_timeline"), _) => Some(TimelineClear),
 
-            (_, _, _) => Some(Help),
+            (_, Some("set_notification"), []) => {
+                Some(Help(Some("set_notification requires argument")))
+            }
+
+            (_, Some("set_notification"), args) => Some(SetNotification(args.join(" "))),
+
+            (_, Some("presentations"), ["pop", ..]) => Some(Presentation(Pop)),
+            (_, Some("presentations"), ["list", ..]) => Some(Presentation(List)),
+
+            (_, Some("presentations"), ["push", user_mention, title @ ..]) if !title.is_empty() => {
+                Some(Presentation(Push {
+                    user_mention,
+                    title: title.join(" "),
+                }))
+            }
+
+            (_, Some("presentations"), ["push", ..]) => Some(Help(Some(
+                "presentations push command requires >= 2 arguments",
+            ))),
+
+            (_, Some("presentations"), ["reorder", map @ ..]) => {
+                let parsed_map = map.iter().map(|x| x.parse()).collect::<Result<_, _>>();
+
+                if let Err(_) = parsed_map {
+                    return Some(Help(Some(
+                        "presentations reorder command's arguments must be valid usize",
+                    )));
+                }
+
+                Some(Presentation(Reorder {
+                    map: parsed_map.unwrap(),
+                }))
+            }
+
+            (_, Some("presentations"), ["delete", index, ..]) => match index.parse() {
+                Ok(index) => Some(Presentation(Delete { index })),
+                Err(_) => Some(Help(Some(
+                    "presentations delete command's argument must be valid usize",
+                ))),
+            },
+
+            (_, Some("presentations"), ["update", index, new_title, ..]) => match index.parse() {
+                Ok(index) => Some(Presentation(Update { index, new_title })),
+                Err(_) => Some(Help(Some(
+                    "presentations update command's first argument must be valid usize",
+                ))),
+            },
+
+            (_, _, _) => Some(Help(Some("unknown subcommand"))),
         }
     }
 
-    async fn invoke_command(&self, ctx: &SerenityContext, message: &Message, cmd: Command) {
+    async fn invoke_command(&self, ctx: &SerenityContext, message: &Message, cmd: Command<'_>) {
         use Command::*;
+        use PresentationCommand::*;
 
         let text_buffer;
         let text = match (cmd, self.ctx.webview_chan.lock().await.as_ref()) {
-            (Help, _) => "https://hackmd.io/@U9f9Fv6rTt2UkRA6UriFTA/BJRVQlTZO",
+            (Help(None), _) => "https://hackmd.io/@U9f9Fv6rTt2UkRA6UriFTA/BJRVQlTZO",
+
+            (Help(Some(hint)), _) => {
+                text_buffer = format!(
+                    "{}\nhttps://hackmd.io/@U9f9Fv6rTt2UkRA6UriFTA/BJRVQlTZO",
+                    hint
+                );
+
+                text_buffer.as_str()
+            }
 
             (Listen, _) => {
                 let chan = message.channel_id;
@@ -144,6 +238,28 @@ impl DiscordListener {
                     .ok();
                 "switching requested"
             }
+
+            (Presentation(List), _) => unimplemented!(),
+
+            (Presentation(Pop), _) => unimplemented!(),
+
+            #[allow(unused_variables)]
+            (Presentation(Reorder { map }), _) => unimplemented!(),
+
+            #[allow(unused_variables)]
+            (Presentation(Delete { index }), _) => unimplemented!(),
+
+            #[allow(unused_variables)]
+            (Presentation(Update { index, new_title }), _) => unimplemented!(),
+
+            #[allow(unused_variables)]
+            (
+                Presentation(Push {
+                    user_mention,
+                    title,
+                }),
+                _,
+            ) => unimplemented!(),
 
             (_, None) => "webview was not ready",
         };

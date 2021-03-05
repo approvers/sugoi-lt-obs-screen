@@ -6,18 +6,13 @@
 
 // TODO: replace all pub -> pub(crate)
 
-mod discord;
+mod client;
 mod model;
-mod twitter;
-mod youtube;
+mod presents;
 
 use {
-    crate::{
-        discord::DiscordListener, model::ScreenAction, twitter::TwitterListener,
-        youtube::YoutubeListener,
-    },
+    crate::model::ScreenAction,
     anyhow::{Context as _, Result},
-    egg_mode::{KeyPair, Token},
     std::{result::Result as StdResult, sync::Arc},
     tauri::{Webview, WebviewMut},
     tokio::{
@@ -44,19 +39,7 @@ fn env_var(name: &str) -> String {
 fn main() -> Result<()> {
     dotenv::dotenv().ok();
 
-    let discord_token = env_var("DISCORD_TOKEN");
     let use_ansi = std::env::var("NO_COLOR").is_err();
-
-    let twitter_token = Token::Access {
-        consumer: KeyPair {
-            key: env_var("TWITTER_CONSUMER_KEY").into(),
-            secret: env_var("TWITTER_CONSUMER_SECRET").into(),
-        },
-        access: KeyPair {
-            key: env_var("TWITTER_ACCESS_KEY").into(),
-            secret: env_var("TWITTER_ACCESS_SECRET").into(),
-        },
-    };
 
     tracing_subscriber::fmt()
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
@@ -73,8 +56,13 @@ fn main() -> Result<()> {
         webview_chan: Mutex::new(None),
     });
 
+    #[cfg(feature = "discord")]
     {
+        use crate::client::discord::DiscordListener;
+        let discord_token = env_var("DISCORD_TOKEN");
+
         let my_ctx = Arc::clone(&ctx);
+
         ctx.rt.spawn(async move {
             DiscordListener::new(my_ctx)
                 .start(&discord_token)
@@ -84,14 +72,35 @@ fn main() -> Result<()> {
         });
     }
 
+    #[cfg(feature = "twitter")]
     {
-        let my_ctx = Arc::clone(&ctx);
+        use crate::client::twitter::TwitterListener;
+        use egg_mode::{KeyPair, Token};
+
+        let twitter_token = Token::Access {
+            consumer: KeyPair {
+                key: env_var("TWITTER_CONSUMER_KEY").into(),
+                secret: env_var("TWITTER_CONSUMER_SECRET").into(),
+            },
+            access: KeyPair {
+                key: env_var("TWITTER_ACCESS_KEY").into(),
+                secret: env_var("TWITTER_ACCESS_SECRET").into(),
+            },
+        };
+
+        let twitter_ctx = Arc::clone(&ctx);
+
         ctx.rt.spawn(async move {
-            TwitterListener::new(my_ctx, twitter_token).start().await;
+            TwitterListener::new(twitter_ctx, twitter_token)
+                .start()
+                .await;
         });
     }
 
+    #[cfg(feature = "youtube")]
     {
+        use crate::client::youtube::YoutubeListener;
+
         let my_ctx = Arc::clone(&ctx);
         ctx.rt.spawn(async move {
             // TODO: replace video id

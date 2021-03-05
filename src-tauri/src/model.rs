@@ -1,5 +1,9 @@
-use {serde::Serialize, serde_json::json};
+use {
+    serde::{Deserialize, Serialize},
+    serde_json::json,
+};
 
+#[derive(Serialize, Deserialize)]
 pub struct User {
     pub icon: Option<String>,
     pub ident: Option<String>,
