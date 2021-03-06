@@ -10,6 +10,9 @@ mod client;
 mod model;
 mod presentations;
 
+#[cfg(feature = "obs")]
+mod obs;
+
 use {
     crate::{model::ScreenAction, presentations::Presentations},
     anyhow::{Context as _, Result},
@@ -24,10 +27,16 @@ use {
     },
 };
 
+#[cfg(feature = "obs")]
+use crate::obs::ObsAction;
+
 struct Context {
     rt: TokioRuntime,
     webview_chan: RwLock<Option<Sender<ScreenAction>>>,
     presentations: RwLock<Presentations>,
+
+    #[cfg(feature = "obs")]
+    obs_chan: RwLock<Option<Sender<ObsAction>>>,
 }
 
 fn env_var(name: &str) -> String {
@@ -63,6 +72,9 @@ fn main() -> Result<()> {
         rt,
         webview_chan: RwLock::new(None),
         presentations: RwLock::new(presentations),
+
+        #[cfg(feature = "obs")]
+        obs_chan: RwLock::new(None),
     });
 
     #[cfg(feature = "discord")]
@@ -110,12 +122,39 @@ fn main() -> Result<()> {
     {
         use crate::client::youtube::YoutubeListener;
 
-        let my_ctx = Arc::clone(&ctx);
+        let youtube_ctx = Arc::clone(&ctx);
         ctx.rt.spawn(async move {
             // TODO: replace video id
-            YoutubeListener::new(my_ctx, "5VoIGGMYrDg".to_string())
+            YoutubeListener::new(youtube_ctx, "5VoIGGMYrDg".to_string())
                 .start()
                 .await;
+        });
+    }
+
+    #[cfg(feature = "obs")]
+    {
+        use crate::obs::ObsClient;
+
+        let addr = env_var("OBS_ADDRESS");
+        let pass = env_var("OBS_PASS");
+        let port = env_var("OBS_PORT")
+            .parse()
+            .context("failed to decode OBS_PORT")?;
+
+        let (tx, rx) = channel(10);
+
+        ctx.rt
+            .block_on(async { *ctx.obs_chan.write().await = Some(tx) });
+
+        ctx.rt.spawn(async move {
+            ObsClient::connect(&addr, port, &pass)
+                .await
+                .context("failed to initialize ObsClient")
+                .unwrap()
+                .start(rx)
+                .await
+                .context("error occur while running ObsClient")
+                .unwrap()
         });
     }
 

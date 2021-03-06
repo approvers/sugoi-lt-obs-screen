@@ -1,6 +1,7 @@
 use {
     crate::{
         model::{Page, ScreenAction, Service, User},
+        obs::ObsAction,
         Context,
     },
     anyhow::{Context as _, Result},
@@ -19,6 +20,8 @@ use {
 const PREFIX: &str = "g!live";
 
 fn extract_user_id_from_mention(mention_text: &str) -> Option<u64> {
+    tracing::info!("{}", mention_text);
+
     lazy_static! {
         static ref MENTION_REGEX: Regex = Regex::new(r#"<@!(?P<id>\d+)>"#).unwrap();
     }
@@ -277,6 +280,20 @@ impl DiscordListener {
                     .send(ScreenAction::SwitchPage(Page::WaitingScreen))
                     .await
                     .ok();
+
+                #[cfg(feature = "obs")]
+                match self.ctx.obs_chan.read().await.as_ref() {
+                    Some(obs_chan) => {
+                        obs_chan.send(ObsAction::Mute).await.ok();
+                    }
+
+                    None => {
+                        tracing::warn!(
+                            "failed to mute stream because obs_channel was not initialized"
+                        );
+                    }
+                }
+
                 "switching requested"
             }
 
@@ -285,6 +302,20 @@ impl DiscordListener {
                     .send(ScreenAction::SwitchPage(Page::LTScreen))
                     .await
                     .ok();
+
+                #[cfg(feature = "obs")]
+                match self.ctx.obs_chan.read().await.as_ref() {
+                    Some(obs_chan) => {
+                        obs_chan.send(ObsAction::UnMute).await.ok();
+                    }
+
+                    None => {
+                        tracing::warn!(
+                            "failed to unmute stream because obs_channel was not initialized"
+                        );
+                    }
+                }
+
                 "switching requested"
             }
 

@@ -13,9 +13,10 @@ build = "src/build.rs"
 twitter = [ "egg-mode" ]
 discord = [ "serenity" ]
 youtube = [ "headless_chrome" ]
+obs = [ "obws" ]
 embedded-server = [ "tauri/embedded-server" ]
 no-server = [ "tauri/no-server" ]
-default = [ "twitter", "discord", "youtube" ]
+default = [ "twitter", "discord", "youtube", "obs" ]
 
 [dependencies]
 serde_json = "1.0"
@@ -33,6 +34,10 @@ futures = "0.3"
 serde_yaml = "0.8"
 lazy_static = "1.4.0"
 async-trait = "0.1"
+
+  [dependencies.obws]
+  version = "0.4"
+  optional = true
 
   [dependencies.egg-mode]
   git = "https://github.com/egg-mode-rs/egg-mode.git"
