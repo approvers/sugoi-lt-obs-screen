@@ -1,6 +1,8 @@
 use {
+    crate::Context,
     serde::{Deserialize, Serialize},
     serde_json::json,
+    std::sync::Arc,
 };
 
 #[derive(Serialize, Deserialize)]
@@ -24,7 +26,7 @@ pub enum Page {
     WaitingScreen,
 }
 
-pub enum ScreenAction {
+pub(crate) enum ScreenAction {
     TimelineClear,
     TimelinePush {
         user: User,
@@ -35,64 +37,74 @@ pub enum ScreenAction {
         text: String,
     },
     PresentationUpdate {
-        presentor: User,
+        presenter: User,
         title: String,
     },
     SwitchPage(Page),
+    UpcomingPresentationsUpdate(Arc<Context>),
 }
 
-pub fn serialize(action: ScreenAction) -> String {
-    use ScreenAction::*;
-    let json = match action {
-        TimelineClear => json!({ "type": "timeline.flush" }),
+impl ScreenAction {
+    pub(crate) async fn serialize(self) -> String {
+        use ScreenAction::*;
+        let json = match self {
+            TimelineClear => json!({ "type": "timeline.flush" }),
 
-        TimelinePush {
-            user,
-            service,
-            content,
-        } => json!({
-            "type": "timeline.add",
-            "args": {
-                "new": {
-                    "user": {
-                        "userIcon": user.icon,
-                        "identifier": user.ident,
-                        "name": user.name
-                    },
-                    "service": service,
-                    "content": content,
+            TimelinePush {
+                user,
+                service,
+                content,
+            } => json!({
+                "type": "timeline.add",
+                "args": {
+                    "new": {
+                        "user": {
+                            "userIcon": user.icon,
+                            "identifier": user.ident,
+                            "name": user.name
+                        },
+                        "service": service,
+                        "content": content,
+                    }
                 }
-            }
-        }),
+            }),
 
-        NotificationUpdate { text } => json!({
-            "type": "notification.update",
-            "args": {
-                "new": text
-            }
-        }),
-
-        PresentationUpdate { presentor, title } => json!({
-            "type": "presentation.update",
-            "args": {
-                "new": {
-                    "presentor": {
-                        "userIcon": presentor.icon,
-                        "identifier": presentor.ident,
-                        "name": presentor.name
-                    },
-                    "title": title
+            NotificationUpdate { text } => json!({
+                "type": "notification.update",
+                "args": {
+                    "new": text
                 }
-            }
-        }),
+            }),
 
-        SwitchPage(page) => json!({
-            "type": "screen.update",
-            "args": {
-                "new": page
-            }
-        }),
-    };
+            PresentationUpdate { presenter, title } => json!({
+                "type": "presentation.update",
+                "args": {
+                    "new": {
+                        "presenter": {
+                            "userIcon": presenter.icon,
+                            "identifier": presenter.ident,
+                            "name": presenter.name
+                        },
+                        "title": title
+                    }
+                }
+            }),
 
-    serde_json::to_string(&json).unwrap()
+            SwitchPage(page) => json!({
+                "type": "screen.update",
+                "args": {
+                    "new": page
+                }
+            }),
+
+            UpcomingPresentationsUpdate(ctx) => json!({
+                "type": "waiting.pending.update",
+                "args": {
+                    "new": ctx.presentations.read().await.to_json_value()
+                }
+            }),
+        };
+
+        serde_json::to_string(&json).unwrap()
+    }
 }

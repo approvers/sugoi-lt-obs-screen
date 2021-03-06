@@ -8,10 +8,10 @@
 
 mod client;
 mod model;
-mod presents;
+mod presentations;
 
 use {
-    crate::model::ScreenAction,
+    crate::{model::ScreenAction, presentations::Presentations},
     anyhow::{Context as _, Result},
     std::{result::Result as StdResult, sync::Arc},
     tauri::{Webview, WebviewMut},
@@ -19,14 +19,15 @@ use {
         runtime::{Builder as TokioRuntimeBuilder, Runtime as TokioRuntime},
         sync::{
             mpsc::{channel, Sender},
-            Mutex,
+            RwLock,
         },
     },
 };
 
 struct Context {
     rt: TokioRuntime,
-    webview_chan: Mutex<Option<Sender<ScreenAction>>>,
+    webview_chan: RwLock<Option<Sender<ScreenAction>>>,
+    presentations: RwLock<Presentations>,
 }
 
 fn env_var(name: &str) -> String {
@@ -51,9 +52,17 @@ fn main() -> Result<()> {
         .build()
         .context("Failed to create tokio runtime")?;
 
+    let presentations = Presentations::new();
+    // rt
+    //     .block_on(Presentations::load_from_file(Path::new(
+    //         "./presentations.yaml",
+    //     )))
+    //     .context("failed to load presentations.yaml")?;
+
     let ctx = Arc::new(Context {
         rt,
-        webview_chan: Mutex::new(None),
+        webview_chan: RwLock::new(None),
+        presentations: RwLock::new(presentations),
     });
 
     #[cfg(feature = "discord")]
@@ -125,11 +134,15 @@ fn setup(ctx: Arc<Context>, webview: &mut Webview, _source: String) {
     let (tx, mut rx) = channel(10);
 
     ctx.rt
-        .block_on(async { *ctx.webview_chan.lock().await = Some(tx) });
+        .block_on(tx.send(ScreenAction::UpcomingPresentationsUpdate(Arc::clone(&ctx))))
+        .ok();
+
+    ctx.rt
+        .block_on(async { *ctx.webview_chan.write().await = Some(tx) });
 
     ctx.rt.spawn(async move {
         while let Some(action) = rx.recv().await {
-            tauri::event::emit(&mut webview, "event", Some(model::serialize(action))).unwrap();
+            tauri::event::emit(&mut webview, "event", Some(action.serialize().await)).unwrap();
         }
     });
 }

@@ -32,6 +32,7 @@ failure = "0.1.8"
 futures = "0.3"
 serde_yaml = "0.8"
 lazy_static = "1.4.0"
+async-trait = "0.1"
 
   [dependencies.egg-mode]
   git = "https://github.com/egg-mode-rs/egg-mode.git"

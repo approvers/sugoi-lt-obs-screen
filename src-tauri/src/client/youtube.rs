@@ -158,7 +158,7 @@ impl YoutubeListener {
                 });
 
             for comment in comment_iter {
-                match me.ctx.webview_chan.lock().await.as_ref() {
+                match me.ctx.webview_chan.read().await.as_ref() {
                     Some(chan) => {
                         chan.send(ScreenAction::TimelinePush {
                             user: User {

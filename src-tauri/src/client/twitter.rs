@@ -41,7 +41,7 @@ impl TwitterListener {
     }
 
     async fn on_tweet(&self, tweet: Tweet) {
-        match self.ctx.webview_chan.lock().await.as_ref() {
+        match self.ctx.webview_chan.read().await.as_ref() {
             Some(chan) => {
                 let user = match tweet.user {
                     Some(u) => User {

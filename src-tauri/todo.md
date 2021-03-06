@@ -1,3 +1,1 @@
--   loading presents from local yaml file
--   presentors CRUD and order swapping from Discord
 -   mute audio on pause screen

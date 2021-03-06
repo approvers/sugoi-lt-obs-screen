@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use {
     crate::{
         model::{Page, ScreenAction, Service, User},
@@ -14,13 +12,15 @@ use {
         model::{channel::Message, prelude::Ready},
         prelude::{Client, Context as SerenityContext, EventHandler},
     },
+    std::{future::Future, pin::Pin, sync::Arc},
+    tokio::sync::mpsc::Sender,
 };
 
 const PREFIX: &str = "g!live";
 
 fn extract_user_id_from_mention(mention_text: &str) -> Option<u64> {
     lazy_static! {
-        static ref MENTION_REGEX: Regex = Regex::new(r#"<@(?P<id>\d+)>"#).unwrap();
+        static ref MENTION_REGEX: Regex = Regex::new(r#"<@!(?P<id>\d+)>"#).unwrap();
     }
 
     let id_str = MENTION_REGEX
@@ -34,13 +34,37 @@ fn extract_user_id_from_mention(mention_text: &str) -> Option<u64> {
 
 #[test]
 fn test_extract_user_id() {
-    assert_eq!(extract_user_id_from_mention("<@123>"), Some(123));
-    assert_eq!(extract_user_id_from_mention("<@012345>"), Some(12345));
+    assert_eq!(extract_user_id_from_mention("<@!123>"), Some(123));
+    assert_eq!(extract_user_id_from_mention("<@!012345>"), Some(12345));
     assert_eq!(extract_user_id_from_mention("hogehoge"), None);
 }
 
+/// Option<impl Future<Output = U>> -> Option<U>
+pub(crate) trait OptionFutExt<O> {
+    fn map_await<'a>(self) -> Pin<Box<dyn Future<Output = Option<O>> + Send + 'a>>
+    where
+        Self: 'a;
+}
+
+impl<I, O> OptionFutExt<O> for Option<I>
+where
+    I: Future<Output = O> + Send,
+{
+    fn map_await<'a>(self) -> Pin<Box<dyn Future<Output = Option<O>> + Send + 'a>>
+    where
+        Self: 'a,
+    {
+        Box::pin(async {
+            match self {
+                Some(t) => Some(t.await),
+                None => None,
+            }
+        })
+    }
+}
+
 enum Command<'a> {
-    Help(Option<&'static str>), // additional error message if available
+    Help(Option<&'a str>), // additional error message if available
     Listen,
     StopListening,
     SetNotification(String),
@@ -58,7 +82,7 @@ enum PresentationCommand<'a> {
     Reorder {
         map: Vec<usize>,
     },
-    Delete {
+    Remove {
         index: usize,
     },
     Update {
@@ -101,7 +125,7 @@ impl DiscordListener {
     }
 
     fn parse<'a>(&self, msg: &'a str) -> Option<Command<'a>> {
-        let mut tokens = msg.split(' ');
+        let mut tokens = msg.split(' ').filter(|x| !x.trim().is_empty());
 
         let prefix = tokens.next();
         let sub_command = tokens.next();
@@ -154,12 +178,16 @@ impl DiscordListener {
                 }))
             }
 
-            (_, Some("presentations"), ["delete", index, ..]) => match index.parse() {
-                Ok(index) => Some(Presentation(Delete { index })),
+            (_, Some("presentations"), ["remove", index, ..]) => match index.parse() {
+                Ok(index) => Some(Presentation(Remove { index })),
                 Err(_) => Some(Help(Some(
                     "presentations delete command's argument must be valid usize",
                 ))),
             },
+
+            (_, Some("presentations"), ["delete", ..]) => Some(Help(Some(
+                "presentations delete command requires at least 1 arguments",
+            ))),
 
             (_, Some("presentations"), ["update", index, new_title, ..]) => match index.parse() {
                 Ok(index) => Some(Presentation(Update { index, new_title })),
@@ -168,16 +196,37 @@ impl DiscordListener {
                 ))),
             },
 
+            (_, Some("presentations"), ["update", ..]) => Some(Help(Some(
+                "presentations update command requires at least 2 arguments",
+            ))),
+
             (_, _, _) => Some(Help(Some("unknown subcommand"))),
         }
+    }
+
+    async fn update_presentations(&self, sender: &Sender<ScreenAction>) {
+        let ctx = Arc::clone(&self.ctx);
+
+        sender
+            .send(ScreenAction::UpcomingPresentationsUpdate(ctx))
+            .await
+            .ok();
     }
 
     async fn invoke_command(&self, ctx: &SerenityContext, message: &Message, cmd: Command<'_>) {
         use Command::*;
         use PresentationCommand::*;
 
+        macro_rules! block {
+            ($b:block) => {
+                loop {
+                    break $b;
+                }
+            };
+        }
+
         let text_buffer;
-        let text = match (cmd, self.ctx.webview_chan.lock().await.as_ref()) {
+        let text = match (cmd, self.ctx.webview_chan.read().await.as_ref()) {
             (Help(None), _) => "https://hackmd.io/@U9f9Fv6rTt2UkRA6UriFTA/BJRVQlTZO",
 
             (Help(Some(hint)), _) => {
@@ -239,27 +288,99 @@ impl DiscordListener {
                 "switching requested"
             }
 
-            (Presentation(List), _) => unimplemented!(),
+            (Presentation(List), _) => {
+                let mut list = self.ctx.presentations.read().await.list();
 
-            (Presentation(Pop), _) => unimplemented!(),
+                list.insert_str(0, "```\n");
+                list.push_str("\n```");
+
+                text_buffer = list;
+                text_buffer.as_str()
+            }
+
+            (Presentation(Pop), Some(sender)) => {
+                let poped = self.ctx.presentations.write().await.pop().await;
+
+                if poped {
+                    self.update_presentations(sender).await;
+                    "popped(removed an entry at 0 index)"
+                } else {
+                    "no other entries in queue"
+                }
+            }
 
             #[allow(unused_variables)]
-            (Presentation(Reorder { map }), _) => unimplemented!(),
+            (Presentation(Reorder { map }), _) => "unimplemented",
 
-            #[allow(unused_variables)]
-            (Presentation(Delete { index }), _) => unimplemented!(),
+            (Presentation(Remove { index }), Some(sender)) => {
+                let deleted = self.ctx.presentations.write().await.remove(index).await;
 
-            #[allow(unused_variables)]
-            (Presentation(Update { index, new_title }), _) => unimplemented!(),
+                if deleted {
+                    self.update_presentations(sender).await;
+                    "removed"
+                } else {
+                    "not found such entry"
+                }
+            }
 
-            #[allow(unused_variables)]
+            (Presentation(Update { index, new_title }), Some(sender)) => {
+                let mut lock = self.ctx.presentations.write().await;
+                let present = lock.get_mut(index);
+
+                match present {
+                    Some(p) => {
+                        p.title = new_title.to_string();
+                        self.update_presentations(sender).await;
+                        "overwrote"
+                    }
+
+                    None => "not found such entry",
+                }
+            }
+
             (
                 Presentation(Push {
                     user_mention,
                     title,
                 }),
-                _,
-            ) => unimplemented!(),
+                Some(sender),
+            ) => block! {{
+                let uid = match extract_user_id_from_mention(user_mention) {
+                    Some(id) => id,
+                    None => break "1st argument must be user mention"
+                };
+
+                let user = match ctx.cache.user(uid).await {
+                    Some(u) => u,
+                    None => break "couldn't get user info. please check user mention is correct"
+                };
+
+                let name = message
+                    .guild_id
+                    .map(|gid| user.nick_in(&ctx.http, gid))
+                    .map_await()
+                    .await
+                    .and_then(|x| x);
+
+                let name = name.as_ref().unwrap_or(&user.name);
+
+                self.ctx
+                    .presentations
+                    .write()
+                    .await
+                    .push(crate::presentations::Presentation {
+                        presenter: User {
+                            icon: user.avatar_url(),
+                            ident: None,
+                            name: name.into(),
+                        },
+                        title,
+                    }).await;
+
+                self.update_presentations(sender).await;
+
+                "pushed"
+            }},
 
             (_, None) => "webview was not ready",
         };
@@ -295,7 +416,7 @@ impl EventHandler for DiscordListener {
                 return; // TODO:
             }
 
-            let webview_chan = self.ctx.webview_chan.lock().await;
+            let webview_chan = self.ctx.webview_chan.read().await;
 
             if let Some(chan) = webview_chan.as_ref() {
                 chan.send(ScreenAction::TimelinePush {
