@@ -251,13 +251,15 @@ impl DiscordListener {
                     }
                 }
 
-                let msg = trim_code_block(&unsplit_ignoring_space(body));
+                let msg = unsplit_ignoring_space(body);
 
                 if !(msg.starts_with("```") && msg.ends_with("```")) {
                     return Some(Help(Some(
                         "Tweet body must be covered with codeblock to avoid mention issues.",
                     )));
                 }
+
+                let msg = trim_code_block(&msg);
 
                 Some(Tweet {
                     with_youtube_footer,
