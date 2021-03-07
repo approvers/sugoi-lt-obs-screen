@@ -74,6 +74,20 @@ where
     }
 }
 
+fn trim_code_block(msg: &str) -> String {
+    let msg_len = msg.chars().count();
+    msg.chars()
+        .skip("```".len())
+        .take(msg_len - ("```".len() * 2))
+        .collect::<String>()
+        .trim()
+        .to_string()
+}
+
+fn unsplit_ignoring_space(slice: &[&str]) -> String {
+    slice.join(" ").trim().to_string()
+}
+
 enum Command<'a> {
     Help(Option<&'a str>), // additional error message if available
     Listen,
@@ -166,7 +180,9 @@ impl DiscordListener {
                 Some(Help(Some("set_notification requires argument")))
             }
 
-            (_, Some("set_notification"), args) => Some(SetNotification(args.join(" "))),
+            (_, Some("set_notification"), args) => {
+                Some(SetNotification(unsplit_ignoring_space(args)))
+            }
 
             (_, Some("presentations"), ["pop", ..]) => Some(Presentation(Pop)),
             (_, Some("presentations"), ["list", ..]) => Some(Presentation(List)),
@@ -174,7 +190,7 @@ impl DiscordListener {
             (_, Some("presentations"), ["push", user_mention, title @ ..]) if !title.is_empty() => {
                 Some(Presentation(Push {
                     user_mention,
-                    title: title.join(" "),
+                    title: unsplit_ignoring_space(title),
                 }))
             }
 
@@ -235,22 +251,13 @@ impl DiscordListener {
                     }
                 }
 
-                let msg = body.join(" ");
+                let msg = trim_code_block(&unsplit_ignoring_space(body));
 
                 if !(msg.starts_with("```") && msg.ends_with("```")) {
                     return Some(Help(Some(
                         "Tweet body must be covered with codeblock to avoid mention issues.",
                     )));
                 }
-
-                let msg_len = msg.chars().count();
-                let msg = msg
-                    .chars()
-                    .skip("```".len())
-                    .take(msg_len - ("```".len() * 2))
-                    .collect::<String>()
-                    .trim()
-                    .to_string();
 
                 Some(Tweet {
                     with_youtube_footer,
@@ -268,7 +275,7 @@ impl DiscordListener {
                     with_youtube_footer: false,
                     with_discord_footer: false,
                     with_twitter_footer: false,
-                    msg: body.join(" "),
+                    msg: trim_code_block(&unsplit_ignoring_space(body)),
                     simulation: cmd == Some("tweet-simulation"),
                 })
             }
