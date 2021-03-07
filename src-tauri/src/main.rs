@@ -1,3 +1,4 @@
+#![feature(or_patterns)]
 #![allow(dead_code)]
 #![cfg_attr(
     all(not(debug_assertions), target_os = "windows"),
@@ -30,13 +31,22 @@ use {
 #[cfg(feature = "obs")]
 use crate::obs::ObsAction;
 
+struct SnsInfo {
+    youtube_stream_url: String,
+    discord_invitation_url: String,
+}
+
 struct Context {
     rt: TokioRuntime,
+    sns_info: SnsInfo,
     webview_chan: RwLock<Option<Sender<ScreenAction>>>,
     presentations: RwLock<Presentations>,
 
     #[cfg(feature = "obs")]
     obs_chan: RwLock<Option<Sender<ObsAction>>>,
+
+    #[cfg(feature = "twitter")]
+    twitter_credentials: egg_mode::Token,
 }
 
 fn env_var(name: &str) -> String {
@@ -67,13 +77,36 @@ fn main() -> Result<()> {
         )))
         .context("failed to load presentations.yaml")?;
 
+    let youtube_stream_url = env_var("YOUTUBE_STREAM_URL");
+    let discord_invitation_url = env_var("DISCORD_INVITATION_URL");
+
+    #[cfg(feature = "twitter")]
+    let twitter_token = egg_mode::Token::Access {
+        consumer: egg_mode::KeyPair {
+            key: env_var("TWITTER_CONSUMER_KEY").into(),
+            secret: env_var("TWITTER_CONSUMER_SECRET").into(),
+        },
+        access: egg_mode::KeyPair {
+            key: env_var("TWITTER_ACCESS_KEY").into(),
+            secret: env_var("TWITTER_ACCESS_SECRET").into(),
+        },
+    };
+
     let ctx = Arc::new(Context {
         rt,
         webview_chan: RwLock::new(None),
         presentations: RwLock::new(presentations),
 
+        sns_info: SnsInfo {
+            youtube_stream_url,
+            discord_invitation_url,
+        },
+
         #[cfg(feature = "obs")]
         obs_chan: RwLock::new(None),
+
+        #[cfg(feature = "twitter")]
+        twitter_credentials: twitter_token,
     });
 
     #[cfg(feature = "discord")]
@@ -95,25 +128,12 @@ fn main() -> Result<()> {
     #[cfg(feature = "twitter")]
     {
         use crate::client::twitter::TwitterListener;
-        use egg_mode::{KeyPair, Token};
-
-        let twitter_token = Token::Access {
-            consumer: KeyPair {
-                key: env_var("TWITTER_CONSUMER_KEY").into(),
-                secret: env_var("TWITTER_CONSUMER_SECRET").into(),
-            },
-            access: KeyPair {
-                key: env_var("TWITTER_ACCESS_KEY").into(),
-                secret: env_var("TWITTER_ACCESS_SECRET").into(),
-            },
-        };
 
         let twitter_ctx = Arc::clone(&ctx);
+        let cred = ctx.twitter_credentials.clone();
 
         ctx.rt.spawn(async move {
-            TwitterListener::new(twitter_ctx, twitter_token)
-                .start()
-                .await;
+            TwitterListener::new(twitter_ctx, cred).start().await;
         });
     }
 

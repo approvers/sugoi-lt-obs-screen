@@ -9,7 +9,7 @@ use {
     parking_lot::RwLock,
     regex::Regex,
     serenity::{
-        model::{channel::Message, id::UserId, prelude::Ready},
+        model::{channel::Message, id::UserId, prelude::Ready, user::User as SerenityUser},
         prelude::{Client, Context as SerenityContext, EventHandler},
     },
     std::{future::Future, pin::Pin, sync::Arc},
@@ -40,6 +40,14 @@ fn test_extract_user_id() {
     assert_eq!(extract_user_id_from_mention("<@!123>"), Some(123));
     assert_eq!(extract_user_id_from_mention("<@!012345>"), Some(12345));
     assert_eq!(extract_user_id_from_mention("hogehoge"), None);
+}
+
+macro_rules! block {
+    ($b:block) => {
+        loop {
+            break $b;
+        }
+    };
 }
 
 /// Option<impl Future<Output = U>> -> Option<U>
@@ -75,6 +83,13 @@ enum Command<'a> {
     Pause,
     Resume,
     Presentation(PresentationCommand<'a>),
+    Tweet {
+        with_youtube_footer: bool,
+        with_discord_footer: bool,
+        with_twitter_footer: bool,
+        msg: String,
+        simulation: bool,
+    },
 }
 
 enum PresentationCommand<'a> {
@@ -203,6 +218,63 @@ impl DiscordListener {
                 "presentations update command requires at least 2 arguments",
             ))),
 
+            (_, cmd @ (Some("tweet") | Some("tweet-simulation")), [flags, body @ ..])
+                if flags.starts_with("-") && !body.is_empty() =>
+            {
+                let mut with_youtube_footer = false;
+                let mut with_discord_footer = false;
+                let mut with_twitter_footer = false;
+
+                // skip -
+                for c in flags.chars().skip(1) {
+                    match c.to_ascii_lowercase() {
+                        't' => with_twitter_footer = true,
+                        'y' => with_youtube_footer = true,
+                        'd' => with_discord_footer = true,
+                        _ => return Some(Help(Some("unknown footer flag. supported flags are d: Discord, y: Youtube, t: Twitter")))
+                    }
+                }
+
+                let msg = body.join(" ");
+
+                if !(msg.starts_with("```") && msg.ends_with("```")) {
+                    return Some(Help(Some(
+                        "Tweet body must be covered with codeblock to avoid mention issues.",
+                    )));
+                }
+
+                let msg_len = msg.chars().count();
+                let msg = msg
+                    .chars()
+                    .skip("```".len())
+                    .take(msg_len - ("```".len() * 2))
+                    .collect::<String>()
+                    .trim()
+                    .to_string();
+
+                Some(Tweet {
+                    with_youtube_footer,
+                    with_discord_footer,
+                    with_twitter_footer,
+                    msg,
+                    simulation: cmd == Some("tweet-simulation"),
+                })
+            }
+
+            (_, cmd @ (Some("tweet") | Some("tweet-simulation")), [body @ ..])
+                if !body.is_empty() =>
+            {
+                Some(Tweet {
+                    with_youtube_footer: false,
+                    with_discord_footer: false,
+                    with_twitter_footer: false,
+                    msg: body.join(" "),
+                    simulation: cmd == Some("tweet-simulation"),
+                })
+            }
+
+            (_, Some("tweet"), _) => Some(Help(Some("tweet command requires argument"))),
+
             (_, _, _) => Some(Help(Some("unknown subcommand"))),
         }
     }
@@ -219,14 +291,6 @@ impl DiscordListener {
     async fn invoke_command(&self, ctx: &SerenityContext, message: &Message, cmd: Command<'_>) {
         use Command::*;
         use PresentationCommand::*;
-
-        macro_rules! block {
-            ($b:block) => {
-                loop {
-                    break $b;
-                }
-            };
-        }
 
         let text_buffer;
         let text = match (cmd, self.ctx.webview_chan.read().await.as_ref()) {
@@ -349,7 +413,9 @@ impl DiscordListener {
                     .await
                     .ok();
 
-                "popped(removed an entry at 0 index and updated ongoing presentation)"
+
+                // TODO: introduce command
+                "popped(removed an entry at 0 index and updated ongoing presentation)\nDO NOT FORGET TO TWEET!"
             }},
 
             #[allow(unused_variables)]
@@ -428,11 +494,118 @@ impl DiscordListener {
                 "pushed"
             }},
 
+            (
+                Tweet {
+                    with_youtube_footer,
+                    with_discord_footer,
+                    with_twitter_footer,
+                    msg,
+                    simulation,
+                },
+                _,
+            ) => block! {{
+                let mut message = msg.to_string();
+
+                let has_footer = with_youtube_footer || with_discord_footer || with_twitter_footer;
+
+                if has_footer {
+                    message.push_str("\n");
+                }
+
+                if with_youtube_footer {
+                    message.push('\n');
+
+                    message.push_str(&format!(
+                        include_str!("tweet_template/footer/youtube.fmt.txt"),
+                        YOUTUBE_URL = self.ctx.sns_info.youtube_stream_url
+                    ));
+                }
+
+                if with_discord_footer {
+                    message.push('\n');
+
+                    message.push_str(&format!(
+                        include_str!("tweet_template/footer/discord.fmt.txt"),
+                        DISCORD_INVITATION_URL = self.ctx.sns_info.discord_invitation_url
+                    ));
+                }
+
+                if with_twitter_footer {
+                    message.push('\n');
+                    message.push_str(include_str!("tweet_template/footer/twitter.txt"));
+                }
+
+                let tweet_len: u32 = message
+                    .chars()
+                    .map(|x| if x.is_ascii() { 1 } else { 2 })
+                    .sum();
+
+                if tweet_len > 280 {
+                    text_buffer = format!("Tweet length is longer than 280({}). Shorten the message or the footer.", tweet_len);
+                    break text_buffer.as_str();
+                }
+
+                if !simulation {
+                    let link = match self.tweet(&message).await {
+                        Ok(Some(link)) => link,
+                        Ok(None) => "unavailable".to_string(),
+
+                        Err(e) => {
+                            tracing::error!("failed to tweet: {:?}", e);
+                            break "failed to tweet. read log for more details.";
+                        }
+                    };
+
+                    message = format!("Tweeted.\nlink: {}\nbody:\n```\n{}\n```", link, message);
+                } else {
+                    message = format!("Tweet simulation.\nbody:\n```\n{}\n```", message);
+                };
+
+                text_buffer = message;
+                text_buffer.as_str()
+            }},
+
             (_, None) => "webview was not ready",
         };
 
         if let Err(e) = message.channel_id.say(&ctx, text).await {
             tracing::error!("failed to send message!: {:?}\n{}", e, &text);
+        }
+    }
+
+    #[rustfmt::skip]
+    async fn can_invoke_command(&self, ctx: &SerenityContext, user: &SerenityUser) -> Result<bool> {
+        const LT_SERVER_GUILD_ID: u64 = 813469320680177715;
+        const LT_SERVER_ORGANIZER_ROLE_ID: u64 = 813469405077831710;
+        const LT_SERVER_OPERATOR_ROLE_ID: u64 = 813469837711900742;
+
+        Ok(
+            user
+                .has_role(&ctx, LT_SERVER_GUILD_ID, LT_SERVER_ORGANIZER_ROLE_ID)
+                .await? ||
+            user
+                .has_role(&ctx, LT_SERVER_GUILD_ID, LT_SERVER_OPERATOR_ROLE_ID)
+                .await?
+        )
+    }
+
+    // TODO: tweet function should not be here
+    /// returns tweet link if available
+    async fn tweet(&self, msg: &str) -> Result<Option<String>> {
+        #[cfg(feature = "twitter")]
+        {
+            let result = egg_mode::tweet::DraftTweet::new(msg.to_string())
+                .send(&self.ctx.twitter_credentials)
+                .await
+                .context("failed to tweet")?;
+
+            Ok(Some(format!("https://twitter.com/_/status/{}/", result.id)))
+        }
+
+        #[cfg(not(feature = "twitter"))]
+        {
+            tracing::warn!("Tweet simulation:\n{}", msg);
+            Ok(None)
         }
     }
 }
@@ -450,39 +623,54 @@ impl EventHandler for DiscordListener {
         }
 
         let content = message.content.trim();
+
         if let Some(cmd) = self.parse(content) {
-            self.invoke_command(&ctx, &message, cmd).await;
-            return;
+            let should_run_cmd = match self.can_invoke_command(&ctx, &message.author).await {
+                Ok(s) => s,
+                Err(e) => {
+                    tracing::warn!(
+                        "failed to check whether user {} can invoke a command: {}",
+                        message.author.name,
+                        e
+                    );
+                    false
+                }
+            };
+
+            if should_run_cmd {
+                self.invoke_command(&ctx, &message, cmd).await;
+                return;
+            }
         }
 
-        let listening_channel_id = self.inner.read().listening_channel_id;
+        let listening_channel_id = self.inner.read().listening_channel_id.clone();
 
         if let Some(target_id) = listening_channel_id {
             if target_id != message.channel_id.0 {
                 return; // TODO:
             }
 
-            let webview_chan = self.ctx.webview_chan.read().await;
+            match self.ctx.webview_chan.read().await.as_ref() {
+                Some(chan) => {
+                    chan.send(ScreenAction::TimelinePush {
+                        user: User {
+                            icon: message.author.avatar_url(),
+                            ident: None,
+                            name: message
+                                .author_nick(&ctx)
+                                .await
+                                .unwrap_or_else(|| message.author.name.clone()),
+                        },
+                        service: Service::Discord,
+                        content: content.to_string(),
+                    })
+                    .await
+                    .ok();
+                }
 
-            if let Some(chan) = webview_chan.as_ref() {
-                chan.send(ScreenAction::TimelinePush {
-                    user: User {
-                        icon: message.author.avatar_url(),
-                        ident: None,
-                        name: message
-                            .author_nick(&ctx)
-                            .await
-                            .unwrap_or_else(|| message.author.name.clone()),
-                    },
-                    service: Service::Discord,
-                    content: content.to_string(),
-                })
-                .await
-                .ok();
-            } else {
-                tracing::warn!(
+                None => tracing::warn!(
                     "failed to send TimelinePush event because Webview was not initialized"
-                );
+                ),
             }
         }
     }
