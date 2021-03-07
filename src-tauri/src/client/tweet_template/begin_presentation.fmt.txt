@@ -1,0 +1,4 @@
+#限界LT
+{PRESENTER_NAME}さんの「{TITLE}」がスタートします!
+
+{RANDOM_FOOTER}

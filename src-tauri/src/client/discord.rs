@@ -1,6 +1,7 @@
 use {
     crate::{
         model::{Page, ScreenAction, Service, User},
+        presentations::Presentation,
         Context,
     },
     anyhow::{Context as _, Result},
@@ -97,6 +98,9 @@ enum Command<'a> {
     Pause,
     Resume,
     Presentation(PresentationCommand<'a>),
+    PresentationTweet {
+        simulation: bool,
+    },
     Tweet {
         with_youtube_footer: bool,
         with_discord_footer: bool,
@@ -128,6 +132,7 @@ enum PresentationCommand<'a> {
 struct DiscordListenerInner {
     listening_channel_id: Option<u64>,
     my_id: Option<u64>,
+    current_presentation: Option<Presentation>,
 }
 
 pub struct DiscordListener {
@@ -142,6 +147,7 @@ impl DiscordListener {
             inner: RwLock::new(DiscordListenerInner {
                 listening_channel_id: None,
                 my_id: None,
+                current_presentation: None,
             }),
         }
     }
@@ -234,7 +240,7 @@ impl DiscordListener {
                 "presentations update command requires at least 2 arguments",
             ))),
 
-            (_, cmd @ (Some("tweet") | Some("tweet-simulation")), [flags, body @ ..])
+            (_, cmd @ (Some("tweet") | Some("tweet_simulation")), [flags, body @ ..])
                 if flags.starts_with("-") && !body.is_empty() =>
             {
                 let mut with_youtube_footer = false;
@@ -266,11 +272,11 @@ impl DiscordListener {
                     with_discord_footer,
                     with_twitter_footer,
                     msg,
-                    simulation: cmd == Some("tweet-simulation"),
+                    simulation: cmd == Some("tweet_simulation"),
                 })
             }
 
-            (_, cmd @ (Some("tweet") | Some("tweet-simulation")), [body @ ..])
+            (_, cmd @ (Some("tweet") | Some("tweet_simulation")), [body @ ..])
                 if !body.is_empty() =>
             {
                 Some(Tweet {
@@ -278,11 +284,17 @@ impl DiscordListener {
                     with_discord_footer: false,
                     with_twitter_footer: false,
                     msg: trim_code_block(&unsplit_ignoring_space(body)),
-                    simulation: cmd == Some("tweet-simulation"),
+                    simulation: cmd == Some("tweet_simulation"),
                 })
             }
 
             (_, Some("tweet"), _) => Some(Help(Some("tweet command requires argument"))),
+
+            (_, Some("presentation_tweet"), _) => Some(PresentationTweet { simulation: false }),
+
+            (_, Some("presentation_tweet_simulation"), _) => {
+                Some(PresentationTweet { simulation: true })
+            }
 
             (_, _, _) => Some(Help(Some("unknown subcommand"))),
         }
@@ -416,11 +428,13 @@ impl DiscordListener {
 
                 sender
                     .send(ScreenAction::PresentationUpdate {
-                        presenter: popped.presenter,
-                        title: popped.title,
+                        presenter: popped.presenter.clone(),
+                        title: popped.title.clone(),
                     })
                     .await
                     .ok();
+
+                self.inner.write().current_presentation = Some(popped);
 
 
                 // TODO: introduce command
@@ -574,6 +588,41 @@ impl DiscordListener {
                 text_buffer.as_str()
             }},
 
+            (PresentationTweet { simulation }, _) => block! {{
+                let msg = match self.inner.read().current_presentation.as_ref() {
+                    Some(pre) => {
+                        format!(
+                            include_str!("tweet_template/begin_presentation.fmt.txt"),
+                            TITLE = pre.title,
+                            PRESENTER_NAME = pre.presenter.name,
+                            RANDOM_FOOTER = self.random_footer()
+                        )
+                    }
+
+                    None => {
+                        break "internal error: current_presentation was None";
+                    }
+                };
+
+                if simulation {
+                    text_buffer = format!("Simulation.\nbody: ```\n{}\n```", msg);
+                    break text_buffer.as_str();
+                }
+
+                let link = match self.tweet(&msg).await {
+                    Ok(Some(link)) => link,
+                    Ok(None) => "unavailable".to_string(),
+
+                    Err(e) => {
+                        tracing::error!("failed to tweet: {:?}", e);
+                        break "failed to tweet. read log for more details.";
+                    }
+                };
+
+                text_buffer = format!("Twitted.\nlink: {}\nbody: ```\n{}\n```", link, msg);
+                text_buffer.as_str()
+            }},
+
             (_, None) => "webview was not ready",
         };
 
@@ -615,6 +664,50 @@ impl DiscordListener {
         {
             tracing::warn!("Tweet simulation:\n{}", msg);
             Ok(None)
+        }
+    }
+
+    fn random_footer(&self) -> String {
+        let index = rand::random::<u8>() % 3;
+
+        //        if with_youtube_footer {
+        //            message.push('\n');
+        //
+        //            message.push_str(&format!(
+        //                include_str!("tweet_template/footer/youtube.fmt.txt"),
+        //                YOUTUBE_URL = self.ctx.sns_info.youtube_stream_url
+        //            ));
+        //        }
+        //
+        //        if with_discord_footer {
+        //            message.push('\n');
+        //
+        //            message.push_str(&format!(
+        //                include_str!("tweet_template/footer/discord.fmt.txt"),
+        //                DISCORD_INVITATION_URL = self.ctx.sns_info.discord_invitation_url
+        //            ));
+        //        }
+        //
+        //        if with_twitter_footer {
+        //            message.push('\n');
+        //            message.push_str(include_str!("tweet_template/footer/twitter.txt"));
+        //        }
+
+        match index {
+            0 => {
+                format!(
+                    include_str!("tweet_template/footer/youtube.fmt.txt"),
+                    YOUTUBE_URL = self.ctx.sns_info.youtube_stream_url
+                )
+            }
+            1 => {
+                format!(
+                    include_str!("tweet_template/footer/discord.fmt.txt"),
+                    DISCORD_INVITATION_URL = self.ctx.sns_info.discord_invitation_url
+                )
+            }
+            2 => include_str!("tweet_template/footer/twitter.txt").to_string(),
+            _ => unreachable!(),
         }
     }
 }

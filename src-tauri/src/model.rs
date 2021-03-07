@@ -5,7 +5,7 @@ use {
     std::sync::Arc,
 };
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct User {
     pub icon: Option<String>,
     pub ident: Option<String>,
