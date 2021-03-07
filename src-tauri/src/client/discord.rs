@@ -670,29 +670,6 @@ impl DiscordListener {
     fn random_footer(&self) -> String {
         let index = rand::random::<u8>() % 3;
 
-        //        if with_youtube_footer {
-        //            message.push('\n');
-        //
-        //            message.push_str(&format!(
-        //                include_str!("tweet_template/footer/youtube.fmt.txt"),
-        //                YOUTUBE_URL = self.ctx.sns_info.youtube_stream_url
-        //            ));
-        //        }
-        //
-        //        if with_discord_footer {
-        //            message.push('\n');
-        //
-        //            message.push_str(&format!(
-        //                include_str!("tweet_template/footer/discord.fmt.txt"),
-        //                DISCORD_INVITATION_URL = self.ctx.sns_info.discord_invitation_url
-        //            ));
-        //        }
-        //
-        //        if with_twitter_footer {
-        //            message.push('\n');
-        //            message.push_str(include_str!("tweet_template/footer/twitter.txt"));
-        //        }
-
         match index {
             0 => {
                 format!(
