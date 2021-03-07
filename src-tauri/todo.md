@@ -1,0 +1,1 @@
+-   mute audio on pause screen

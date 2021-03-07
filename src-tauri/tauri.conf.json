@@ -1,0 +1,58 @@
+{
+  "build": {
+    "distDir": "../build",
+    "devPath": "http://localhost:3000",
+    "beforeDevCommand": "",
+    "beforeBuildCommand": ""
+  },
+  "ctx": {},
+  "tauri": {
+    "embeddedServer": {
+      "active": false
+    },
+    "allowlist": {
+      "event": true
+    },
+    "bundle": {
+      "active": true,
+      "targets": ["deb"],
+      "identifier": "com.tauri.dev",
+      "resources": [],
+      "externalBin": [],
+      "copyright": "",
+      "category": "DeveloperTool",
+      "shortDescription": "",
+      "longDescription": "",
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
+      "deb": {
+        "depends": [],
+        "useBootstrapper": false
+      },
+      "osx": {
+        "frameworks": [],
+        "minimumSystemVersion": "",
+        "useBootstrapper": false
+      },
+      "exceptionDomain": ""
+    },
+    "window": {
+      "title": "Live Screen",
+      "width": 1920,
+      "height": 1080,
+      "resizable": true,
+      "fullscreen": false
+    },
+    "security": {
+      "csp": "default-src blob: data: filesystem: ws: http: https: 'unsafe-eval' 'unsafe-inline'"
+    },
+    "inliner": {
+      "active": true
+    }
+  }
+}
