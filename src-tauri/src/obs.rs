@@ -1,7 +1,7 @@
 use {
     anyhow::{Context as _, Result},
     obws::Client,
-    tokio::sync::mpsc::{self, Receiver, Sender},
+    tokio::sync::mpsc::Receiver,
 };
 
 pub(crate) enum ObsAction {
