@@ -1,27 +1,27 @@
 use {
     crate::{
         model::{Page, ScreenAction, Service, User},
-        obs::ObsAction,
         Context,
     },
     anyhow::{Context as _, Result},
+    async_trait::async_trait,
     lazy_static::lazy_static,
     parking_lot::RwLock,
     regex::Regex,
     serenity::{
-        async_trait,
-        model::{channel::Message, prelude::Ready},
+        model::{channel::Message, id::UserId, prelude::Ready},
         prelude::{Client, Context as SerenityContext, EventHandler},
     },
     std::{future::Future, pin::Pin, sync::Arc},
     tokio::sync::mpsc::Sender,
 };
 
+#[cfg(feature = "obs")]
+use crate::obs::ObsAction;
+
 const PREFIX: &str = "g!live";
 
 fn extract_user_id_from_mention(mention_text: &str) -> Option<u64> {
-    tracing::info!("{}", mention_text);
-
     lazy_static! {
         static ref MENTION_REGEX: Regex = Regex::new(r#"<@!(?P<id>\d+)>"#).unwrap();
     }
@@ -170,7 +170,7 @@ impl DiscordListener {
             (_, Some("presentations"), ["reorder", map @ ..]) => {
                 let parsed_map = map.iter().map(|x| x.parse()).collect::<Result<_, _>>();
 
-                if let Err(_) = parsed_map {
+                if parsed_map.is_err() {
                     return Some(Help(Some(
                         "presentations reorder command's arguments must be valid usize",
                     )));
@@ -188,7 +188,7 @@ impl DiscordListener {
                 ))),
             },
 
-            (_, Some("presentations"), ["delete", ..]) => Some(Help(Some(
+            (_, Some("presentations"), ["remove", ..]) => Some(Help(Some(
                 "presentations delete command requires at least 1 arguments",
             ))),
 
@@ -322,6 +322,7 @@ impl DiscordListener {
             (Presentation(List), _) => {
                 let mut list = self.ctx.presentations.read().await.list();
 
+                // make list codeblock
                 list.insert_str(0, "```\n");
                 list.push_str("\n```");
 
@@ -329,16 +330,27 @@ impl DiscordListener {
                 text_buffer.as_str()
             }
 
-            (Presentation(Pop), Some(sender)) => {
-                let poped = self.ctx.presentations.write().await.pop().await;
+            (Presentation(Pop), Some(sender)) => block! {{
+                let popped = self.ctx.presentations.write().await.pop().await;
 
-                if poped {
-                    self.update_presentations(sender).await;
-                    "popped(removed an entry at 0 index)"
-                } else {
-                    "no other entries in queue"
+                if popped.is_none() {
+                    break "no other entries in queue";
                 }
-            }
+
+                let popped = popped.unwrap();
+
+                self.update_presentations(sender).await;
+
+                sender
+                    .send(ScreenAction::PresentationUpdate {
+                        presenter: popped.presenter,
+                        title: popped.title,
+                    })
+                    .await
+                    .ok();
+
+                "popped(removed an entry at 0 index and updated ongoing presentation)"
+            }},
 
             #[allow(unused_variables)]
             (Presentation(Reorder { map }), _) => "unimplemented",
@@ -381,9 +393,12 @@ impl DiscordListener {
                     None => break "1st argument must be user mention"
                 };
 
-                let user = match ctx.cache.user(uid).await {
-                    Some(u) => u,
-                    None => break "couldn't get user info. please check user mention is correct"
+                let user = match UserId(uid).to_user(&ctx).await {
+                    Ok(u) => u,
+                    Err(e) => {
+                        tracing::error!("failed to fetch user info. id: {}, err: {}", uid, e);
+                        break "couldn't get user info. please check user mention is correct. read log for more info."
+                    }
                 };
 
                 let name = message

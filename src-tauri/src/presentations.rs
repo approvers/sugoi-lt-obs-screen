@@ -56,10 +56,10 @@ impl Presentations {
             .join("\n")
     }
 
-    pub(crate) async fn pop(&mut self) -> bool {
-        let result = self.list.pop_front().is_some();
+    pub(crate) async fn pop(&mut self) -> Option<Presentation> {
+        let result = self.list.pop_front();
 
-        if result {
+        if result.is_some() {
             self.save(Path::new("./temp_presentations.yaml"))
                 .await
                 .unwrap();

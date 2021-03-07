@@ -16,7 +16,7 @@ mod obs;
 use {
     crate::{model::ScreenAction, presentations::Presentations},
     anyhow::{Context as _, Result},
-    std::{result::Result as StdResult, sync::Arc},
+    std::{path::Path, result::Result as StdResult, sync::Arc},
     tauri::{Webview, WebviewMut},
     tokio::{
         runtime::{Builder as TokioRuntimeBuilder, Runtime as TokioRuntime},
@@ -61,12 +61,11 @@ fn main() -> Result<()> {
         .build()
         .context("Failed to create tokio runtime")?;
 
-    let presentations = Presentations::new();
-    // rt
-    //     .block_on(Presentations::load_from_file(Path::new(
-    //         "./presentations.yaml",
-    //     )))
-    //     .context("failed to load presentations.yaml")?;
+    let presentations = rt
+        .block_on(Presentations::load_from_file(Path::new(
+            "./presentations.yaml",
+        )))
+        .context("failed to load presentations.yaml")?;
 
     let ctx = Arc::new(Context {
         rt,
