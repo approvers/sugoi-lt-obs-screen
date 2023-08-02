@@ -2,7 +2,7 @@
 name = "sugoi-lt-obs-screen"
 version = "0.1.0"
 description = "this is sugoi LT OBS screen"
-authors = [ "approvers" ]
+authors = ["approvers"]
 license = ""
 repository = ""
 default-run = "sugoi-lt-obs-screen"
@@ -10,56 +10,47 @@ edition = "2018"
 build = "src/build.rs"
 
 [features]
-twitter = [ "egg-mode" ]
-discord = [ "serenity" ]
-youtube = [ "headless_chrome" ]
-obs = [ "obws" ]
-embedded-server = [ "tauri/embedded-server" ]
-no-server = [ "tauri/no-server" ]
-default = [ "twitter", "discord", "youtube", "obs" ]
+discord = ["serenity"]
+youtube = ["headless_chrome"]
+obs = ["obws"]
+# default = ["discord", "youtube", "obs"]
 
 [dependencies]
 serde_json = "1.0"
-serde = { version = "1.0", features = [ "derive" ] }
-tauri = { version = "0.11", features = [ "event" ] }
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "1.4", features = ["api-all"] }
 tracing = "0.1"
-tracing-subscriber = "0.2"
+tracing-subscriber = "0.3"
 dotenv = "0.15"
 anyhow = "1.0"
-regex = "1.4"
-parking_lot = "0.11"
+regex = "1.9"
+parking_lot = "0.12"
 tokio-stream = "0.1"
 failure = "0.1.8"
 futures = "0.3"
-serde_yaml = "0.8"
+serde_yaml = "0.9"
 lazy_static = "1.4.0"
 async-trait = "0.1"
 rand = "0.8"
 
-  [dependencies.obws]
-  version = "0.4"
-  optional = true
+[dependencies.obws]
+version = "0.11"
+optional = true
 
-  [dependencies.egg-mode]
-  git = "https://github.com/egg-mode-rs/egg-mode.git"
-  optional = true
-  default_features = false
-  features = [ "rustls" ]
+[dependencies.tokio]
+version = "1.29"
+features = ["rt-multi-thread", "parking_lot"]
 
-  [dependencies.tokio]
-  version = "1.2"
-  features = [ "rt-multi-thread", "parking_lot" ]
+[dependencies.serenity]
+version = "0.11"
+optional = true
+default-features = false
+features = ["rustls_backend", "cache", "client", "gateway", "model"]
 
-  [dependencies.serenity]
-  version = "0.10"
-  optional = true
-  default-features = false
-  features = [ "rustls_backend", "cache", "client", "gateway", "model" ]
-
-  [dependencies.headless_chrome]
-  version = "0.9"
-  optional = true
-  features = [ "fetch" ]
+[dependencies.headless_chrome]
+version = "1.0"
+optional = true
+features = ["fetch"]
 
 [target."cfg(windows)".build-dependencies]
 winres = "0.1"
