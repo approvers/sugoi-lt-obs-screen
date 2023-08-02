@@ -1,4 +1,3 @@
-import * as React from "react";
 import styles from "../../../../style/ltscreen/main.module.scss";
 import { useWindowDimensions } from "../../../../lib/WindowHooks";
 

@@ -196,7 +196,6 @@ function reducer(state: ScreenData, action: Action): ScreenData {
         },
       };
   }
-  return state;
 }
 
 export function useReducerWithMiddleware(): [

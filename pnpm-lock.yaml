@@ -28,6 +28,12 @@ devDependencies:
   '@tauri-apps/cli':
     specifier: ^1.4.0
     version: 1.4.0
+  '@tsconfig/strictest':
+    specifier: ^2.0.1
+    version: 2.0.1
+  '@tsconfig/vite-react':
+    specifier: ^2.0.0
+    version: 2.0.0
   '@types/node':
     specifier: ^18.17.1
     version: 18.17.1
@@ -659,6 +665,14 @@ packages:
       '@tauri-apps/cli-win32-arm64-msvc': 1.4.0
       '@tauri-apps/cli-win32-ia32-msvc': 1.4.0
       '@tauri-apps/cli-win32-x64-msvc': 1.4.0
+    dev: true
+
+  /@tsconfig/strictest@2.0.1:
+    resolution: {integrity: sha512-7JHHCbyCsGUxLd0pDbp24yz3zjxw2t673W5oAP6HCEdr/UUhaRhYd3SSnUsGCk+VnPVJVA4mXROzbhI+nyIk+w==}
+    dev: true
+
+  /@tsconfig/vite-react@2.0.0:
+    resolution: {integrity: sha512-erT+k9yzjRYnqRn6Fmvz+Y8+AtE+/YE954frGGwwit2ifsoWzRzYaOTlGj9/z0xJyYiaKNnNiFhid312QdC4rw==}
     dev: true
 
   /@types/node@18.17.1:
