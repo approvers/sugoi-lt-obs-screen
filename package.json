@@ -2,55 +2,35 @@
   "name": "sugoi-lt-obs-screen",
   "version": "0.1.0",
   "private": true,
-  "dependencies": {
-    "@tauri-apps/api": "^1.4.0",
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^14.0.0",
-    "@testing-library/user-event": "^14.4.3",
-    "@types/jest": "^29.5.3",
-    "@types/node": "^20.4.5",
-    "@types/react": "^18.2.18",
-    "@types/react-dom": "^18.2.7",
-    "node-sass": "^9.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "ress": "^5.0.2",
-    "typescript": "^5.1.6",
-    "web-vitals": "^3.4.0"
-  },
-  "devDependencies": {
-    "@tauri-apps/cli": "^1.4.0",
-    "concurrently": "^8.2.0",
-    "cross-env": "^7.0.3",
-    "npm-run-all": "^4.1.5",
-    "prettier": "^3.0.0"
-  },
+  "packageManager": "pnpm@8.6.11",
   "scripts": {
-    "front:start": "react-scripts start",
-    "front:build": "react-scripts build",
+    "front:start": "vite",
+    "front:build": "vite build",
     "front:format": "prettier -cw 'src/**/*.ts?(x)'",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
-    "dev": "cross-env BROWSER=none concurrently npm:tauri:dev npm:front:start",
+    "dev": "BROWSER=none run-p tauri:dev front:start",
     "build": "run-s front:build tauri:build"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+  "dependencies": {
+    "@tauri-apps/api": "^1.4.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "ress": "^5.0.2",
+    "sass": "^1.64.2",
+    "typescript": "^5.1.6"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.4.0",
+    "@tsconfig/strictest": "^2.0.1",
+    "@tsconfig/vite-react": "^2.0.0",
+    "@types/node": "^18.17.1",
+    "@types/react": "^18.2.18",
+    "@types/react-dom": "^18.2.7",
+    "@vitejs/plugin-react": "^4.0.4",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.0.0",
+    "vite": "^4.4.8",
+    "vite-plugin-html": "^3.2.0"
   }
 }
