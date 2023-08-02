@@ -13,7 +13,6 @@
     "@types/react-dom": "^17.0.0",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
-    "react-scripts": "4.0.2",
     "ress": "^3.0.0",
     "sass": "^1.64.1",
     "tauri": "^0.14.1",
@@ -21,14 +20,17 @@
     "web-vitals": "^1.0.1"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.4",
     "concurrently": "^5.3.0",
     "cross-env": "^7.0.3",
     "npm-run-all": "^4.1.5",
-    "prettier": "^2.2.1"
+    "prettier": "^2.2.1",
+    "vite": "^4.4.8",
+    "vite-plugin-html": "^3.2.0"
   },
   "scripts": {
-    "front:start": "NODE_OPTIONS=--openssl-legacy-provider react-scripts start",
-    "front:build": "react-scripts build",
+    "front:start": "vite",
+    "front:build": "vite build",
     "front:format": "prettier -cw 'src/**/*.ts?(x)'",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
