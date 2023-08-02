@@ -6,7 +6,7 @@ import styles from "../style/app.module.scss";
 import { WaitingScreen } from "./waiting/WaitingScreen";
 import { Page, ScreenData } from "../lib/data/ScreenData";
 
-// import { listen } from "tauri/api/event";
+import { listen } from "@tauri-apps/api/event";
 
 function selectPage(page: Page): React.FC<{ state: ScreenData }> {
   switch (page) {
@@ -24,9 +24,9 @@ function App() {
   const TransitingPage = state.transition.to && selectPage(state.transition.to);
 
   React.useEffect(() => {
-    // listen("event", (data) => {
-    //   dispatch(JSON.parse(data.payload as string));
-    // });
+    listen("event", (data) => {
+      dispatch(JSON.parse(data.payload as string));
+    });
   }, []);
 
   return (

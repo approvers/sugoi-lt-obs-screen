@@ -17,6 +17,8 @@ use {
     tokio::sync::mpsc::Sender,
 };
 
+use serenity::prelude::GatewayIntents;
+
 #[cfg(feature = "obs")]
 use crate::obs::ObsAction;
 
@@ -24,7 +26,7 @@ const PREFIX: &str = "g!live";
 
 fn extract_user_id_from_mention(mention_text: &str) -> Option<u64> {
     lazy_static! {
-        static ref MENTION_REGEX: Regex = Regex::new(r#"<@!(?P<id>\d+)>"#).unwrap();
+        static ref MENTION_REGEX: Regex = Regex::new(r"<@!(?P<id>\d+)>").unwrap();
     }
 
     let id_str = MENTION_REGEX
@@ -33,7 +35,7 @@ fn extract_user_id_from_mention(mention_text: &str) -> Option<u64> {
         .unwrap()
         .as_str();
 
-    Some(id_str.parse().ok()?)
+    id_str.parse().ok()
 }
 
 #[test]
@@ -153,7 +155,7 @@ impl DiscordListener {
     }
 
     pub async fn start(self, token: &str) -> Result<()> {
-        Client::builder(token)
+        Client::builder(token, GatewayIntents::all())
             .event_handler(self)
             .await
             .context("Failed to create discord client")?
@@ -241,7 +243,7 @@ impl DiscordListener {
             ))),
 
             (_, cmd @ (Some("tweet") | Some("tweet_simulation")), [flags, body @ ..])
-                if flags.starts_with("-") && !body.is_empty() =>
+                if flags.starts_with('-') && !body.is_empty() =>
             {
                 let mut with_youtube_footer = false;
                 let mut with_discord_footer = false;
@@ -276,9 +278,7 @@ impl DiscordListener {
                 })
             }
 
-            (_, cmd @ (Some("tweet") | Some("tweet_simulation")), [body @ ..])
-                if !body.is_empty() =>
-            {
+            (_, cmd @ (Some("tweet") | Some("tweet_simulation")), body) if !body.is_empty() => {
                 Some(Tweet {
                     with_youtube_footer: false,
                     with_discord_footer: false,
@@ -532,7 +532,7 @@ impl DiscordListener {
                 let has_footer = with_youtube_footer || with_discord_footer || with_twitter_footer;
 
                 if has_footer {
-                    message.push_str("\n");
+                    message.push('\n');
                 }
 
                 if with_youtube_footer {
@@ -722,7 +722,7 @@ impl EventHandler for DiscordListener {
             }
         }
 
-        let listening_channel_id = self.inner.read().listening_channel_id.clone();
+        let listening_channel_id = self.inner.read().listening_channel_id;
 
         if let Some(target_id) = listening_channel_id {
             if target_id != message.channel_id.0 {

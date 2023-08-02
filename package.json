@@ -13,6 +13,7 @@
     "build": "run-s front:build tauri:build"
   },
   "dependencies": {
+    "@tauri-apps/api": "^1.4.0",
     "@types/node": "^12.0.0",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
@@ -20,7 +21,6 @@
     "react-dom": "^17.0.1",
     "ress": "^3.0.0",
     "sass": "^1.64.1",
-    "tauri": "^0.14.1",
     "typescript": "^4.1.2"
   },
   "devDependencies": {

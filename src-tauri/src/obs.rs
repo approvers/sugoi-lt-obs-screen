@@ -15,14 +15,9 @@ pub(crate) struct ObsClient {
 
 impl ObsClient {
     pub(crate) async fn connect(addr: &str, port: u16, pass: &str) -> Result<Self> {
-        let client = Client::connect(addr, port)
+        let client = Client::connect(addr, port, Some(pass))
             .await
             .context("failed to connect to obs client")?;
-
-        client
-            .login(Some(pass))
-            .await
-            .context("failed to login to obs")?;
 
         Ok(Self { client })
     }
@@ -31,8 +26,8 @@ impl ObsClient {
         while let Some(action) = re.recv().await {
             let source_name_list = self
                 .client
-                .sources()
-                .get_sources_list()
+                .inputs()
+                .list(None)
                 .await
                 .context("failed to fetch sources")?
                 .into_iter()
@@ -42,8 +37,8 @@ impl ObsClient {
                 ObsAction::Mute => {
                     for name in source_name_list {
                         self.client
-                            .sources()
-                            .set_mute(&name, true)
+                            .inputs()
+                            .set_muted(&name, true)
                             .await
                             .with_context(|| format!("failed to mute {}", name))?;
                     }
@@ -52,8 +47,8 @@ impl ObsClient {
                 ObsAction::UnMute => {
                     for name in source_name_list {
                         self.client
-                            .sources()
-                            .set_mute(&name, false)
+                            .inputs()
+                            .set_muted(&name, false)
                             .await
                             .with_context(|| format!("failed to mute {}", name))?;
                     }

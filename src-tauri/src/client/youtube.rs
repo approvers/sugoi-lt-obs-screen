@@ -4,8 +4,8 @@ use {
         Context,
     },
     headless_chrome::{
-        protocol::network::{
-            events::ResponseReceivedEventParams, methods::GetResponseBodyReturnObject,
+        protocol::cdp::Network::{
+            events::ResponseReceivedEventParams, GetResponseBodyReturnObject,
         },
         Browser, LaunchOptionsBuilder,
     },
@@ -62,7 +62,7 @@ impl YoutubeListener {
             ))
             .unwrap();
 
-            tab.enable_response_handling(Box::new(move |a, b| self.on_response(a, b)))
+            tab.register_response_handling("a", Box::new(move |a, b| self.on_response(a, b)))
                 .unwrap();
 
             (browser, tab)
@@ -75,7 +75,7 @@ impl YoutubeListener {
     fn on_response(
         &self,
         param: ResponseReceivedEventParams,
-        fetch: &dyn Fn() -> Result<GetResponseBodyReturnObject, failure::Error>,
+        fetch: &dyn Fn() -> Result<GetResponseBodyReturnObject, anyhow::Error>,
     ) {
         let id = param.request_id;
 
@@ -131,11 +131,9 @@ impl YoutubeListener {
                 .as_array()?
                 .iter()
                 .flat_map(|x| {
-                    Some(
-                        x.get("addChatItemAction")?
-                            .get("item")?
-                            .get("liveChatTextMessageRenderer")?,
-                    )
+                    x.get("addChatItemAction")?
+                        .get("item")?
+                        .get("liveChatTextMessageRenderer")
                 })
                 .flat_map(|x| {
                     Some(Comment {

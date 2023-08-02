@@ -1,4 +1,3 @@
-#![feature(or_patterns)]
 #![allow(dead_code)]
 #![cfg_attr(
     all(not(debug_assertions), target_os = "windows"),
@@ -17,8 +16,7 @@ mod obs;
 use {
     crate::{model::ScreenAction, presentations::Presentations},
     anyhow::{Context as _, Result},
-    std::{path::Path, result::Result as StdResult, sync::Arc},
-    tauri::{Webview, WebviewMut},
+    std::{path::Path, sync::Arc},
     tokio::{
         runtime::{Builder as TokioRuntimeBuilder, Runtime as TokioRuntime},
         sync::{
@@ -27,6 +25,8 @@ use {
         },
     },
 };
+
+use tauri::{App, Manager, Runtime};
 
 #[cfg(feature = "obs")]
 use crate::obs::ObsAction;
@@ -44,9 +44,6 @@ struct Context {
 
     #[cfg(feature = "obs")]
     obs_chan: RwLock<Option<Sender<ObsAction>>>,
-
-    #[cfg(feature = "twitter")]
-    twitter_credentials: egg_mode::Token,
 }
 
 fn env_var(name: &str) -> String {
@@ -80,18 +77,6 @@ fn main() -> Result<()> {
     let youtube_stream_url = env_var("YOUTUBE_STREAM_URL");
     let discord_invitation_url = env_var("DISCORD_INVITATION_URL");
 
-    #[cfg(feature = "twitter")]
-    let twitter_token = egg_mode::Token::Access {
-        consumer: egg_mode::KeyPair {
-            key: env_var("TWITTER_CONSUMER_KEY").into(),
-            secret: env_var("TWITTER_CONSUMER_SECRET").into(),
-        },
-        access: egg_mode::KeyPair {
-            key: env_var("TWITTER_ACCESS_KEY").into(),
-            secret: env_var("TWITTER_ACCESS_SECRET").into(),
-        },
-    };
-
     let ctx = Arc::new(Context {
         rt,
         webview_chan: RwLock::new(None),
@@ -104,10 +89,9 @@ fn main() -> Result<()> {
 
         #[cfg(feature = "obs")]
         obs_chan: RwLock::new(None),
-
-        #[cfg(feature = "twitter")]
-        twitter_credentials: twitter_token,
     });
+
+    std::mem::forget(Arc::clone(&ctx));
 
     #[cfg(feature = "discord")]
     {
@@ -122,18 +106,6 @@ fn main() -> Result<()> {
                 .await
                 .context("failed to start discord listener")
                 .unwrap();
-        });
-    }
-
-    #[cfg(feature = "twitter")]
-    {
-        use crate::client::twitter::TwitterListener;
-
-        let twitter_ctx = Arc::clone(&ctx);
-        let cred = ctx.twitter_credentials.clone();
-
-        ctx.rt.spawn(async move {
-            TwitterListener::new(twitter_ctx, cred).start().await;
         });
     }
 
@@ -177,18 +149,18 @@ fn main() -> Result<()> {
         });
     }
 
-    tauri::AppBuilder::new()
-        .setup(move |a, b| setup(Arc::clone(&ctx), a, b))
-        .invoke_handler(on_client_message)
-        .build()
-        .run();
+    tauri::Builder::default()
+        .setup(move |x| {
+            setup(Arc::clone(&ctx), x);
+            Ok(())
+        })
+        .run(tauri::generate_context!())
+        .unwrap();
 
     Ok(())
 }
 
-fn setup(ctx: Arc<Context>, webview: &mut Webview, _source: String) {
-    let mut webview: WebviewMut = webview.as_mut();
-
+fn setup<R: Runtime>(ctx: Arc<Context>, app: &mut App<R>) {
     let (tx, mut rx) = channel(10);
 
     ctx.rt
@@ -198,14 +170,11 @@ fn setup(ctx: Arc<Context>, webview: &mut Webview, _source: String) {
     ctx.rt
         .block_on(async { *ctx.webview_chan.write().await = Some(tx) });
 
+    let win = app.get_window("main").unwrap();
+
     ctx.rt.spawn(async move {
         while let Some(action) = rx.recv().await {
-            tauri::event::emit(&mut webview, "event", Some(action.serialize().await)).unwrap();
+            win.emit("event", action.serialize().await).unwrap();
         }
     });
-}
-
-#[allow(clippy::unnecessary_wraps)]
-fn on_client_message(_webview: &mut Webview, _message: &str) -> StdResult<(), String> {
-    Ok(())
 }
