@@ -8,35 +8,35 @@ dependencies:
   '@tauri-apps/api':
     specifier: ^1.4.0
     version: 1.4.0
-  '@types/node':
-    specifier: ^12.0.0
-    version: 12.0.0
-  '@types/react':
-    specifier: ^17.0.0
-    version: 17.0.0
-  '@types/react-dom':
-    specifier: ^17.0.0
-    version: 17.0.0
   react:
-    specifier: ^17.0.1
-    version: 17.0.1
+    specifier: ^18.2.0
+    version: 18.2.0
   react-dom:
-    specifier: ^17.0.1
-    version: 17.0.1(react@17.0.1)
+    specifier: ^18.2.0
+    version: 18.2.0(react@18.2.0)
   ress:
-    specifier: ^3.0.0
-    version: 3.0.0
+    specifier: ^5.0.2
+    version: 5.0.2
   sass:
-    specifier: ^1.64.1
-    version: 1.64.1
+    specifier: ^1.64.2
+    version: 1.64.2
   typescript:
-    specifier: ^4.1.2
-    version: 4.1.2
+    specifier: ^5.1.6
+    version: 5.1.6
 
 devDependencies:
   '@tauri-apps/cli':
     specifier: ^1.4.0
     version: 1.4.0
+  '@types/node':
+    specifier: ^18.17.1
+    version: 18.17.1
+  '@types/react':
+    specifier: ^18.2.18
+    version: 18.2.18
+  '@types/react-dom':
+    specifier: ^18.2.7
+    version: 18.2.7
   '@vitejs/plugin-react':
     specifier: ^4.0.4
     version: 4.0.4(vite@4.4.8)
@@ -44,11 +44,11 @@ devDependencies:
     specifier: ^4.1.5
     version: 4.1.5
   prettier:
-    specifier: ^2.2.1
-    version: 2.2.1
+    specifier: ^3.0.0
+    version: 3.0.0
   vite:
     specifier: ^4.4.8
-    version: 4.4.8(@types/node@12.0.0)(sass@1.64.1)
+    version: 4.4.8(@types/node@18.17.1)(sass@1.64.2)
   vite-plugin-html:
     specifier: ^3.2.0
     version: 3.2.0(vite@4.4.8)
@@ -661,25 +661,31 @@ packages:
       '@tauri-apps/cli-win32-x64-msvc': 1.4.0
     dev: true
 
-  /@types/node@12.0.0:
-    resolution: {integrity: sha512-Jrb/x3HT4PTJp6a4avhmJCDEVrPdqLfl3e8GGMbpkGGdwAV5UGlIs4vVEfsHHfylZVOKZWpOqmqFH8CbfOZ6kg==}
+  /@types/node@18.17.1:
+    resolution: {integrity: sha512-xlR1jahfizdplZYRU59JlUx9uzF1ARa8jbhM11ccpCJya8kvos5jwdm2ZAgxSCwOl0fq21svP18EVwPBXMQudw==}
+    dev: true
 
   /@types/prop-types@15.7.5:
     resolution: {integrity: sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==}
-    dev: false
+    dev: true
 
-  /@types/react-dom@17.0.0:
-    resolution: {integrity: sha512-lUqY7OlkF/RbNtD5nIq7ot8NquXrdFrjSOR6+w9a9RFQevGi1oZO1dcJbXMeONAPKtZ2UrZOEJ5UOCVsxbLk/g==}
+  /@types/react-dom@18.2.7:
+    resolution: {integrity: sha512-GRaAEriuT4zp9N4p1i8BDBYmEyfo+xQ3yHjJU4eiK5NDa1RmUZG+unZABUTK4/Ox/M+GaHwb6Ow8rUITrtjszA==}
     dependencies:
-      '@types/react': 17.0.0
-    dev: false
+      '@types/react': 18.2.18
+    dev: true
 
-  /@types/react@17.0.0:
-    resolution: {integrity: sha512-aj/L7RIMsRlWML3YB6KZiXB3fV2t41+5RBGYF8z+tAKU43Px8C3cYUZsDvf1/+Bm4FK21QWBrDutu8ZJ/70qOw==}
+  /@types/react@18.2.18:
+    resolution: {integrity: sha512-da4NTSeBv/P34xoZPhtcLkmZuJ+oYaCxHmyHzwaDQo9RQPBeXV+06gEk2FpqEcsX9XrnNLvRpVh6bdavDSjtiQ==}
     dependencies:
       '@types/prop-types': 15.7.5
+      '@types/scheduler': 0.16.3
       csstype: 3.1.2
-    dev: false
+    dev: true
+
+  /@types/scheduler@0.16.3:
+    resolution: {integrity: sha512-5cJ8CB4yAx7BH1oMvdU0Jh9lrEXyPkar6F9G/ERswkCuvP4KQZfZkSjcMbAICCpQTN4OuZn8tz0HiKv9TGZgrQ==}
+    dev: true
 
   /@vitejs/plugin-react@4.0.4(vite@4.4.8):
     resolution: {integrity: sha512-7wU921ABnNYkETiMaZy7XqpueMnpu5VxvVps13MjmCo+utBdD79sZzrApHawHtVX66cCJQQTXFcjH0y9dSUK8g==}
@@ -691,7 +697,7 @@ packages:
       '@babel/plugin-transform-react-jsx-self': 7.22.5(@babel/core@7.22.9)
       '@babel/plugin-transform-react-jsx-source': 7.22.5(@babel/core@7.22.9)
       react-refresh: 0.14.0
-      vite: 4.4.8(@types/node@12.0.0)(sass@1.64.1)
+      vite: 4.4.8(@types/node@18.17.1)(sass@1.64.2)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -932,7 +938,7 @@ packages:
 
   /csstype@3.1.2:
     resolution: {integrity: sha512-I7K1Uu0MBPzaFKg4nI5Q7Vs2t+3gWWW648spaF+Rg7pI9ds18Ugn+lvg4SHczUdKlHI5LWBXyqfS8+DufyBsgQ==}
-    dev: false
+    dev: true
 
   /debug@4.3.4:
     resolution: {integrity: sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==}
@@ -1615,11 +1621,6 @@ packages:
       boolbase: 1.0.0
     dev: true
 
-  /object-assign@4.1.1:
-    resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
-    engines: {node: '>=0.10.0'}
-    dev: false
-
   /object-inspect@1.12.3:
     resolution: {integrity: sha512-geUvdk7c+eizMNUDkRpW1wJwgfOiOeHbxBR/hLXK1aT6zmVSO0jsQcs7fj6MGw89jC/cjGfLcNOrtMYtGqm81g==}
     dev: true
@@ -1709,9 +1710,9 @@ packages:
       source-map-js: 1.0.2
     dev: true
 
-  /prettier@2.2.1:
-    resolution: {integrity: sha512-PqyhM2yCjg/oKkFPtTGUojv7gnZAoG80ttl45O6x2Ug/rMJw4wcc9k6aaf2hibP7BGVCCM33gZoGjyvt9mm16Q==}
-    engines: {node: '>=10.13.0'}
+  /prettier@3.0.0:
+    resolution: {integrity: sha512-zBf5eHpwHOGPC47h0zrPyNn+eAEIdEzfywMoYn2XPi0P44Zp0tSq64rq0xAREh4auw2cJZHo9QUob+NqCQky4g==}
+    engines: {node: '>=14'}
     hasBin: true
     dev: true
 
@@ -1719,15 +1720,14 @@ packages:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
     dev: true
 
-  /react-dom@17.0.1(react@17.0.1):
-    resolution: {integrity: sha512-6eV150oJZ9U2t9svnsspTMrWNyHc6chX0KzDeAOXftRa8bNeOKTTfCJ7KorIwenkHd2xqVTBTCZd79yk/lx/Ug==}
+  /react-dom@18.2.0(react@18.2.0):
+    resolution: {integrity: sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==}
     peerDependencies:
-      react: 17.0.1
+      react: ^18.2.0
     dependencies:
       loose-envify: 1.4.0
-      object-assign: 4.1.1
-      react: 17.0.1
-      scheduler: 0.20.2
+      react: 18.2.0
+      scheduler: 0.23.0
     dev: false
 
   /react-refresh@0.14.0:
@@ -1735,12 +1735,11 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /react@17.0.1:
-    resolution: {integrity: sha512-lG9c9UuMHdcAexXtigOZLX8exLWkW0Ku29qPRU8uhF2R9BN96dLCt0psvzPLlHc5OWkgymP3qwTRgbnw5BKx3w==}
+  /react@18.2.0:
+    resolution: {integrity: sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==}
     engines: {node: '>=0.10.0'}
     dependencies:
       loose-envify: 1.4.0
-      object-assign: 4.1.1
     dev: false
 
   /read-pkg@3.0.0:
@@ -1781,8 +1780,8 @@ packages:
       supports-preserve-symlinks-flag: 1.0.0
     dev: true
 
-  /ress@3.0.0:
-    resolution: {integrity: sha512-MTPto7t44AawqmSbEmvMKoSMWPnxjaTuHf94s7RjWxuSGFN0o8/b+6yOwkaC50+Vihjsu6ODUEQR397gTMn57w==}
+  /ress@5.0.2:
+    resolution: {integrity: sha512-oHBtOWo/Uc8SzQMbQNIKTcgi8wKmAs7IlNlRywmXudbOtF+c27FlOIq7tnwLDVcTywe6JXYo1pDXHO6kABwNYA==}
     dev: false
 
   /reusify@1.0.4:
@@ -1822,8 +1821,8 @@ packages:
       is-regex: 1.1.4
     dev: true
 
-  /sass@1.64.1:
-    resolution: {integrity: sha512-16rRACSOFEE8VN7SCgBu1MpYCyN7urj9At898tyzdXFhC+a+yOX5dXwAR7L8/IdPJ1NB8OYoXmD55DM30B2kEQ==}
+  /sass@1.64.2:
+    resolution: {integrity: sha512-TnDlfc+CRnUAgLO9D8cQLFu/GIjJIzJCGkE7o4ekIGQOH7T3GetiRR/PsTWJUHhkzcSPrARkPI+gNWn5alCzDg==}
     engines: {node: '>=14.0.0'}
     hasBin: true
     dependencies:
@@ -1831,11 +1830,10 @@ packages:
       immutable: 4.3.1
       source-map-js: 1.0.2
 
-  /scheduler@0.20.2:
-    resolution: {integrity: sha512-2eWfGgAqqWFGqtdMmcL5zCMK1U8KlXv8SQFGglL3CEtd0aDVDWgeF/YoCmvln55m5zSk3J/20hTaSBeSObsQDQ==}
+  /scheduler@0.23.0:
+    resolution: {integrity: sha512-CtuThmgHNg7zIZWAXi3AsyIzA3n4xx7aNyjwC2VJldO2LMVDhFK+63xGqq6CsJH4rTAt6/M+N4GhZiDYPx9eUw==}
     dependencies:
       loose-envify: 1.4.0
-      object-assign: 4.1.1
     dev: false
 
   /semver@5.7.2:
@@ -2032,9 +2030,9 @@ packages:
       is-typed-array: 1.1.12
     dev: true
 
-  /typescript@4.1.2:
-    resolution: {integrity: sha512-thGloWsGH3SOxv1SoY7QojKi0tc+8FnOmiarEGMbd/lar7QOEd3hvlx3Fp5y6FlDUGl9L+pd4n2e+oToGMmhRQ==}
-    engines: {node: '>=4.2.0'}
+  /typescript@5.1.6:
+    resolution: {integrity: sha512-zaWCozRZ6DLEWAWFrVDz1H6FVXzUSfTy5FUMWsQlU8Ym5JP9eO4xkTIROFCQvhQf61z6O/G6ugw3SgAnvvm+HA==}
+    engines: {node: '>=14.17'}
     hasBin: true
     dev: false
 
@@ -2087,10 +2085,10 @@ packages:
       html-minifier-terser: 6.1.0
       node-html-parser: 5.4.2
       pathe: 0.2.0
-      vite: 4.4.8(@types/node@12.0.0)(sass@1.64.1)
+      vite: 4.4.8(@types/node@18.17.1)(sass@1.64.2)
     dev: true
 
-  /vite@4.4.8(@types/node@12.0.0)(sass@1.64.1):
+  /vite@4.4.8(@types/node@18.17.1)(sass@1.64.2):
     resolution: {integrity: sha512-LONawOUUjxQridNWGQlNizfKH89qPigK36XhMI7COMGztz8KNY0JHim7/xDd71CZwGT4HtSRgI7Hy+RlhG0Gvg==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
@@ -2118,11 +2116,11 @@ packages:
       terser:
         optional: true
     dependencies:
-      '@types/node': 12.0.0
+      '@types/node': 18.17.1
       esbuild: 0.18.17
       postcss: 8.4.27
       rollup: 3.27.0
-      sass: 1.64.1
+      sass: 1.64.2
     optionalDependencies:
       fsevents: 2.3.2
     dev: true

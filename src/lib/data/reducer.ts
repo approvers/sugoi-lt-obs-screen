@@ -127,7 +127,7 @@ export const initialState: ScreenData = {
 function middleware(
   state: ScreenData,
   action: Action,
-  dispatch: Dispatch<Action>
+  dispatch: Dispatch<Action>,
 ): ScreenData {
   switch (action.type) {
     case "screen.update":
@@ -137,7 +137,7 @@ function middleware(
             type: "screen.finishTransition",
             args: undefined,
           }),
-        2000
+        2000,
       );
       dispatch({
         type: "screen.startTransition",
@@ -201,7 +201,7 @@ function reducer(state: ScreenData, action: Action): ScreenData {
 
 export function useReducerWithMiddleware(): [
   ScreenData,
-  (action: Action) => void
+  (action: Action) => void,
 ] {
   const [state, dispatch] = useReducer(reducer, initialState);
 

@@ -12,7 +12,9 @@ export const Footer: React.FC<FooterProps> = ({ presentation }) => (
       <img
         src={presentation.presenter.userIcon}
         style={{
-          objectPosition: `0% ${(presentation.icon_fit_position ?? 0.5) * 100}%`,
+          objectPosition: `0% ${
+            (presentation.icon_fit_position ?? 0.5) * 100
+          }%`,
         }}
       />
     </div>
