@@ -1,8 +1,9 @@
 import * as React from "react";
+
 import { ScreenData } from "../../lib/data/ScreenData";
-import { Notification } from "./parts/Notification";
-import { Main } from "./parts/Main";
 import { Footer } from "./parts/Footer";
+import { Main } from "./parts/Main";
+import { Notification } from "./parts/Notification";
 
 type LTScreenProps = {
   state: ScreenData;

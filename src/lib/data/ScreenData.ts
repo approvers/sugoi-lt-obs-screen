@@ -22,8 +22,8 @@ export type Page = "LTScreen" | "WaitingScreen";
 
 export type ScreenData = {
   presentation: Presentation;
-  pending_presentation: Presentation[];
-  timeline: TimelineCard[];
+  pending_presentation: Array<Presentation>;
+  timeline: Array<TimelineCard>;
   notification?: string;
   transition: {
     current: Page;

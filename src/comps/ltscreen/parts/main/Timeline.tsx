@@ -1,7 +1,8 @@
 import * as React from "react";
-import styles from "../../../../style/ltscreen/main.module.scss";
+
 import { Service, TimelineCard } from "../../../../lib/data/ScreenData";
 import { useWindowDimensions } from "../../../../lib/WindowHooks";
+import styles from "../../../../style/ltscreen/main.module.scss";
 
 const icon: { [key in Service]: string } = {
   twitter: "/font-awesome/twitter-brands.svg",
@@ -10,7 +11,7 @@ const icon: { [key in Service]: string } = {
 };
 
 type TimelineProps = {
-  timeline: TimelineCard[];
+  timeline: Array<TimelineCard>;
 };
 export const Timeline: React.FC<TimelineProps> = ({ timeline }) => {
   const { width } = useWindowDimensions();
@@ -28,11 +29,15 @@ export const Timeline: React.FC<TimelineProps> = ({ timeline }) => {
           <p className={styles.card_content}>{card.content}</p>
           <div className={styles.card_detail}>
             <span>
-              {card.user.userIcon && (
-                <img src={card.user.userIcon} className={styles.card_icon} />
+              {card.user.userIcon != null && (
+                <img
+                  src={card.user.userIcon}
+                  alt=""
+                  className={styles.card_icon}
+                />
               )}
               {card.user.name}
-              {card.user.identifier && (
+              {card.user.identifier != null && (
                 <>
                   {" "}
                   (

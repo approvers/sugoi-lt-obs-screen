@@ -1,0 +1,7 @@
+{
+  "root": true,
+  "extends": ["@shun-shobon/base", "@shun-shobon/react"],
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  }
+}

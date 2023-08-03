@@ -1,12 +1,12 @@
-import React from "react";
-import { useReducerWithMiddleware } from "../lib/data/reducer";
-import { LTScreen } from "./ltscreen/LTScreen";
-
-import styles from "../style/app.module.scss";
-import { WaitingScreen } from "./waiting/WaitingScreen";
-import { Page, ScreenData } from "../lib/data/ScreenData";
-
 import { listen } from "@tauri-apps/api/event";
+import { useEffect } from "react";
+
+import type { Action } from "../lib/data/reducer";
+import { useReducerWithMiddleware } from "../lib/data/reducer";
+import type { Page, ScreenData } from "../lib/data/ScreenData";
+import styles from "../style/app.module.scss";
+import { LTScreen } from "./ltscreen/LTScreen";
+import { WaitingScreen } from "./waiting/WaitingScreen";
 
 function selectPage(page: Page): React.FC<{ state: ScreenData }> {
   switch (page) {
@@ -17,17 +17,21 @@ function selectPage(page: Page): React.FC<{ state: ScreenData }> {
   }
 }
 
-function App() {
+function App(): JSX.Element {
   const [state, dispatch] = useReducerWithMiddleware();
 
   const CurrentPage = selectPage(state.transition.current);
   const TransitingPage = state.transition.to && selectPage(state.transition.to);
 
-  React.useEffect(() => {
-    listen("event", (data) => {
-      dispatch(JSON.parse(data.payload as string));
+  useEffect(() => {
+    const unlisten = listen("event", (data) => {
+      dispatch(JSON.parse(data.payload as string) as Action);
     });
-  }, []);
+
+    return () => {
+      void unlisten.then((f) => f());
+    };
+  }, [dispatch]);
 
   return (
     <div className={styles.screen_container}>
