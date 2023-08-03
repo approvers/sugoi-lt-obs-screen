@@ -57,7 +57,7 @@
     font-family: "Roboto Mono", monospace;
   }
 
-  &_service{
+  &_service {
     margin-left: 0.5em;
 
     svg {
@@ -80,7 +80,5 @@
       @extend .card_service;
       color: #fa5f5f;
     }
-
   }
-
 }

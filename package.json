@@ -4,13 +4,14 @@
   "private": true,
   "packageManager": "pnpm@8.6.11",
   "scripts": {
-    "front:start": "vite",
-    "front:build": "vite build",
-    "front:format": "prettier -cw 'src/**/*.ts?(x)'",
-    "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build",
-    "dev": "BROWSER=none run-p tauri:dev front:start",
-    "build": "run-s front:build tauri:build"
+    "build": "tauri build",
+    "build:front": "vite build",
+    "dev": "tauri dev",
+    "dev:front": "vite",
+    "lint": "run-p -c lint:*",
+    "lint:prettier": "prettier --check 'src/**/*'",
+    "lint-fix": "run-s -c lint-fix:*",
+    "lint-fix:prettier": "prettier --write 'src/**/*'"
   },
   "dependencies": {
     "@tauri-apps/api": "^1.4.0",

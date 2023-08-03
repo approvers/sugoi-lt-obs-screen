@@ -12,9 +12,13 @@
   }
 }
 
-@keyframes fade{
-  from { opacity: 0%; }
-  to { opacity: 100%; }
+@keyframes fade {
+  from {
+    opacity: 0%;
+  }
+  to {
+    opacity: 100%;
+  }
 }
 
 .transiting {

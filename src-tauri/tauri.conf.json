@@ -1,9 +1,9 @@
 {
   "build": {
-    "distDir": "../build",
+    "distDir": "../dist",
     "devPath": "http://localhost:5173",
-    "beforeDevCommand": "",
-    "beforeBuildCommand": ""
+    "beforeDevCommand": "pnpm dev:vite",
+    "beforeBuildCommand": "pnpm build:vite"
   },
   "tauri": {
     "allowlist": {

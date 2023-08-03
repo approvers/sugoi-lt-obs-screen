@@ -1,7 +1,7 @@
 @function fore-color($type: "dark") {
   $primary-color-table: (
     "dark": #333,
-    "light": #FFF
+    "light": #fff,
   );
 
   @return map-get($primary-color-table, $type);
@@ -10,7 +10,7 @@
 @function back-color($type: "dark") {
   $primary-color-table: (
     "dark": #424242,
-    "light": #F5FEFF
+    "light": #f5feff,
   );
 
   @return map-get($primary-color-table, $type);
@@ -19,7 +19,7 @@
 @function opposite($type) {
   $opposite-name: (
     "dark": "light",
-    "light": "dark"
+    "light": "dark",
   );
 
   @return map-get($opposite-name, $type);
