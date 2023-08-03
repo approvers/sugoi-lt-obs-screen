@@ -160,7 +160,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn setup<R: Runtime>(ctx: Arc<Context>, app: &mut App<R>) {
+fn setup<R: Runtime>(ctx: Arc<Context>, app: &App<R>) {
     let (tx, mut rx) = channel(10);
 
     ctx.rt
