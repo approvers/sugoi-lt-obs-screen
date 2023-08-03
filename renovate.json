@@ -4,7 +4,6 @@
     "config:recommended",
     ":timezone(Asia/Tokyo)",
     ":semanticCommits",
-    ":disableDependencyDashboard",
     ":prImmediately",
     ":automergeMinor",
     ":automergeRequireAllStatusChecks"
