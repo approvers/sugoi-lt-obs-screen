@@ -1,0 +1,17 @@
+name: Check
+on:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  check-front:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: shun-shobon/actions/setup-node@master
+        with:
+          node-version-file: .tool-versions
+
+      - run: pnpm run lint
