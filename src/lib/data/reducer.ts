@@ -1,4 +1,5 @@
 import { Dispatch, useReducer } from "react";
+
 import { Page, Presentation, ScreenData, TimelineCard } from "./ScreenData";
 
 export type Action =
@@ -33,7 +34,7 @@ export type Action =
   | {
       type: "waiting.pending.update";
       args: {
-        new: Presentation[];
+        new: Array<Presentation>;
       };
     }
   | {
@@ -50,7 +51,6 @@ export type Action =
     }
   | {
       type: "screen.finishTransition"; // Internal use
-      args: never | undefined;
     };
 
 export const initialState: ScreenData = {
@@ -135,7 +135,6 @@ function middleware(
         () =>
           dispatch({
             type: "screen.finishTransition",
-            args: undefined,
           }),
         2000,
       );
@@ -145,6 +144,10 @@ function middleware(
           new: action.args.new,
         },
       });
+      break;
+    default:
+      // Do nothing
+      break;
   }
   return state;
 }

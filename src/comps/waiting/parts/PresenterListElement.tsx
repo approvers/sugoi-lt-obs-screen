@@ -1,4 +1,5 @@
 import * as React from "react";
+
 import { Presentation } from "../../../lib/data/ScreenData";
 import styles from "../../../style/waiting/waiting_screen.module.scss";
 

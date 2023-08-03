@@ -1,15 +1,16 @@
 import * as React from "react";
-import { PresenterListElement } from "./PresenterListElement";
-import styles from "../../../style/waiting/waiting_screen.module.scss";
+
 import { Presentation } from "../../../lib/data/ScreenData";
+import styles from "../../../style/waiting/waiting_screen.module.scss";
+import { PresenterListElement } from "./PresenterListElement";
 
 type PresenterListProps = {
-  presentations: Presentation[];
+  presentations: Array<Presentation>;
 };
 export const PresenterList: React.FC<PresenterListProps> = ({
   presentations,
 }) => {
-  if (presentations.length === 0) return <></>;
+  if (presentations.length === 0) return null;
 
   return (
     <div className={styles.list}>

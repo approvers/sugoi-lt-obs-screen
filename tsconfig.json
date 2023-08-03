@@ -5,6 +5,5 @@
     "exactOptionalPropertyTypes": false,
     "noPropertyAccessFromIndexSignature": false,
     "types": ["vite/client"]
-  },
-  "include": ["src"]
+  }
 }

@@ -1,7 +1,9 @@
-import styles from "../../../../style/ltscreen/main.module.scss";
-import { useWindowDimensions } from "../../../../lib/WindowHooks";
+import type { FC } from "react";
 
-export const Mask = () => {
+import { useWindowDimensions } from "../../../../lib/WindowHooks";
+import styles from "../../../../style/ltscreen/main.module.scss";
+
+export const Mask: FC = () => {
   const { width } = useWindowDimensions();
 
   // TODO: この数値をどうにかしたい
