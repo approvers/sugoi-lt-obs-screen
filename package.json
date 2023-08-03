@@ -11,6 +11,7 @@
     "lint": "run-p -c lint:*",
     "lint:eslint": "eslint --ext .ts,.tsx src",
     "lint:prettier": "prettier --check 'src/**/*'",
+    "lint:tsc": "tsc",
     "lint-fix": "run-s -c lint-fix:*",
     "lint-fix:eslint": "pnpm run lint:eslint --fix",
     "lint-fix:prettier": "prettier --write 'src/**/*'"
