@@ -34,4 +34,6 @@ jobs:
           components: rustfmt, clippy
 
       - run: cargo fmt --all -- --check
+        working-directory: src-tauri
       - run: cargo clippy --all-targets --all-features -- -D warnings
+        working-directory: src-tauri
