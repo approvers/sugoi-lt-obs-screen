@@ -45,14 +45,6 @@ fn test_extract_user_id() {
     assert_eq!(extract_user_id_from_mention("hogehoge"), None);
 }
 
-macro_rules! block {
-    ($b:block) => {
-        loop {
-            break $b;
-        }
-    };
-}
-
 /// Option<impl Future<Output = U>> -> Option<U>
 pub(crate) trait OptionFutExt<O> {
     fn map_await<'a>(self) -> Pin<Box<dyn Future<Output = Option<O>> + Send + 'a>>
@@ -171,42 +163,39 @@ impl DiscordListener {
         let sub_command = tokens.next();
         let args = tokens.collect::<Vec<_>>();
 
+        if !prefix.is_some_and(|p| p == PREFIX) {
+            return None;
+        }
+
         use Command::*;
         use PresentationCommand::*;
 
-        match (prefix, sub_command, args.as_slice()) {
-            (None, _, _) => None,
-            (Some(p), _, _) if p != PREFIX => None,
+        Some(match (sub_command, args.as_slice()) {
+            (Some("pause"), _) => Pause,
+            (Some("resume"), _) => Resume,
+            (Some("listen"), _) => Listen,
+            (Some("stop_listening"), _) => StopListening,
+            (Some("clear_timeline"), _) => TimelineClear,
 
-            (_, Some("pause"), _) => Some(Pause),
-            (_, Some("resume"), _) => Some(Resume),
-            (_, Some("listen"), _) => Some(Listen),
-            (_, Some("stop_listening"), _) => Some(StopListening),
-            (_, Some("clear_timeline"), _) => Some(TimelineClear),
+            (Some("set_notification"), []) => Help(Some("set_notification requires argument")),
 
-            (_, Some("set_notification"), []) => {
-                Some(Help(Some("set_notification requires argument")))
-            }
+            (Some("set_notification"), args) => SetNotification(unsplit_ignoring_space(args)),
 
-            (_, Some("set_notification"), args) => {
-                Some(SetNotification(unsplit_ignoring_space(args)))
-            }
+            (Some("presentations"), ["pop", ..]) => Presentation(Pop),
+            (Some("presentations"), ["list", ..]) => Presentation(List),
 
-            (_, Some("presentations"), ["pop", ..]) => Some(Presentation(Pop)),
-            (_, Some("presentations"), ["list", ..]) => Some(Presentation(List)),
-
-            (_, Some("presentations"), ["push", user_mention, title @ ..]) if !title.is_empty() => {
-                Some(Presentation(Push {
+            (Some("presentations"), ["push", user_mention, title @ ..]) if !title.is_empty() => {
+                Presentation(Push {
                     user_mention,
                     title: unsplit_ignoring_space(title),
-                }))
+                })
             }
 
-            (_, Some("presentations"), ["push", ..]) => Some(Help(Some(
-                "presentations push command requires >= 2 arguments",
-            ))),
+            (Some("presentations"), ["push", ..]) => {
+                Help(Some("presentations push command requires >= 2 arguments"))
+            }
 
-            (_, Some("presentations"), ["reorder", map @ ..]) => {
+            (Some("presentations"), ["reorder", map @ ..]) => {
                 let parsed_map = map.iter().map(|x| x.parse()).collect::<Result<_, _>>();
 
                 if parsed_map.is_err() {
@@ -215,34 +204,34 @@ impl DiscordListener {
                     )));
                 }
 
-                Some(Presentation(Reorder {
+                Presentation(Reorder {
                     map: parsed_map.unwrap(),
-                }))
+                })
             }
 
-            (_, Some("presentations"), ["remove", index, ..]) => match index.parse() {
-                Ok(index) => Some(Presentation(Remove { index })),
-                Err(_) => Some(Help(Some(
+            (Some("presentations"), ["remove", index, ..]) => match index.parse() {
+                Ok(index) => Presentation(Remove { index }),
+                Err(_) => Help(Some(
                     "presentations delete command's argument must be valid usize",
-                ))),
+                )),
             },
 
-            (_, Some("presentations"), ["remove", ..]) => Some(Help(Some(
+            (Some("presentations"), ["remove", ..]) => Help(Some(
                 "presentations delete command requires at least 1 arguments",
-            ))),
+            )),
 
-            (_, Some("presentations"), ["update", index, new_title, ..]) => match index.parse() {
-                Ok(index) => Some(Presentation(Update { index, new_title })),
-                Err(_) => Some(Help(Some(
+            (Some("presentations"), ["update", index, new_title, ..]) => match index.parse() {
+                Ok(index) => Presentation(Update { index, new_title }),
+                Err(_) => Help(Some(
                     "presentations update command's first argument must be valid usize",
-                ))),
+                )),
             },
 
-            (_, Some("presentations"), ["update", ..]) => Some(Help(Some(
+            (Some("presentations"), ["update", ..]) => Help(Some(
                 "presentations update command requires at least 2 arguments",
-            ))),
+            )),
 
-            (_, cmd @ (Some("tweet") | Some("tweet_simulation")), [flags, body @ ..])
+            (cmd @ (Some("tweet") | Some("tweet_simulation")), [flags, body @ ..])
                 if flags.starts_with('-') && !body.is_empty() =>
             {
                 let mut with_youtube_footer = false;
@@ -269,35 +258,31 @@ impl DiscordListener {
 
                 let msg = trim_code_block(&msg);
 
-                Some(Tweet {
+                Tweet {
                     with_youtube_footer,
                     with_discord_footer,
                     with_twitter_footer,
                     msg,
                     simulation: cmd == Some("tweet_simulation"),
-                })
+                }
             }
 
-            (_, cmd @ (Some("tweet") | Some("tweet_simulation")), body) if !body.is_empty() => {
-                Some(Tweet {
-                    with_youtube_footer: false,
-                    with_discord_footer: false,
-                    with_twitter_footer: false,
-                    msg: trim_code_block(&unsplit_ignoring_space(body)),
-                    simulation: cmd == Some("tweet_simulation"),
-                })
-            }
+            (cmd @ (Some("tweet") | Some("tweet_simulation")), body) if !body.is_empty() => Tweet {
+                with_youtube_footer: false,
+                with_discord_footer: false,
+                with_twitter_footer: false,
+                msg: trim_code_block(&unsplit_ignoring_space(body)),
+                simulation: cmd == Some("tweet_simulation"),
+            },
 
-            (_, Some("tweet"), _) => Some(Help(Some("tweet command requires argument"))),
+            (Some("tweet"), _) => Help(Some("tweet command requires argument")),
 
-            (_, Some("presentation_tweet"), _) => Some(PresentationTweet { simulation: false }),
+            (Some("presentation_tweet"), _) => PresentationTweet { simulation: false },
 
-            (_, Some("presentation_tweet_simulation"), _) => {
-                Some(PresentationTweet { simulation: true })
-            }
+            (Some("presentation_tweet_simulation"), _) => PresentationTweet { simulation: true },
 
-            (_, _, _) => Some(Help(Some("unknown subcommand"))),
-        }
+            _ => Help(Some("unknown subcommand")),
+        })
     }
 
     async fn update_presentations(&self, sender: &Sender<ScreenAction>) {
@@ -310,40 +295,48 @@ impl DiscordListener {
     }
 
     async fn invoke_command(&self, ctx: &SerenityContext, message: &Message, cmd: Command<'_>) {
+        let text = self.command_output(cmd, message, ctx).await;
+
+        if let Err(e) = message.channel_id.say(&ctx, &text).await {
+            tracing::error!("failed to send message!: {:?}\n{}", e, text);
+        }
+    }
+
+    async fn command_output(
+        &self,
+        cmd: Command<'_>,
+        message: &Message,
+        ctx: &SerenityContext,
+    ) -> String {
         use Command::*;
         use PresentationCommand::*;
 
-        let text_buffer;
-        let text = match (cmd, self.ctx.webview_chan.read().await.as_ref()) {
-            (Help(None), _) => "https://hackmd.io/@U9f9Fv6rTt2UkRA6UriFTA/BJRVQlTZO",
+        match (cmd, self.ctx.webview_chan.read().await.as_ref()) {
+            (Help(None), _) => "https://hackmd.io/@U9f9Fv6rTt2UkRA6UriFTA/BJRVQlTZO".into(),
 
             (Help(Some(hint)), _) => {
-                text_buffer = format!(
+                format!(
                     "{}\nhttps://hackmd.io/@U9f9Fv6rTt2UkRA6UriFTA/BJRVQlTZO",
                     hint
-                );
-
-                text_buffer.as_str()
+                )
             }
 
             (Listen, _) => {
                 let chan = message.channel_id;
                 self.inner.write().listening_channel_id = Some(chan.0);
 
-                text_buffer = format!("now listening at <#{}>", chan.0);
+                let text_buffer = format!("now listening at <#{}>", chan.0);
                 tracing::info!("{}", &text_buffer);
-
-                text_buffer.as_str()
+                text_buffer
             }
 
-            (StopListening, _) => {
-                if self.inner.read().listening_channel_id.is_some() {
-                    self.inner.write().listening_channel_id = None;
-                    "stopped"
-                } else {
-                    "currently not listening any channel"
-                }
+            (StopListening, _) => if self.inner.read().listening_channel_id.is_some() {
+                self.inner.write().listening_channel_id = None;
+                "stopped"
+            } else {
+                "currently not listening any channel"
             }
+            .into(),
 
             (SetNotification(text), Some(sender)) => {
                 sender
@@ -351,12 +344,12 @@ impl DiscordListener {
                     .await
                     .ok();
 
-                "set"
+                "set".into()
             }
 
             (TimelineClear, Some(sender)) => {
                 sender.send(ScreenAction::TimelineClear).await.ok();
-                "cleared"
+                "cleared".into()
             }
 
             // TODO: lock during switching (2sec)
@@ -379,7 +372,7 @@ impl DiscordListener {
                     }
                 }
 
-                "switching requested"
+                "switching requested".into()
             }
 
             (Resume, Some(sender)) => {
@@ -401,7 +394,7 @@ impl DiscordListener {
                     }
                 }
 
-                "switching requested"
+                "switching requested".into()
             }
 
             (Presentation(List), _) => {
@@ -411,15 +404,14 @@ impl DiscordListener {
                 list.insert_str(0, "```\n");
                 list.push_str("\n```");
 
-                text_buffer = list;
-                text_buffer.as_str()
+                list
             }
 
-            (Presentation(Pop), Some(sender)) => block! {{
+            (Presentation(Pop), Some(sender)) => {
                 let popped = self.ctx.presentations.write().await.pop().await;
 
                 if popped.is_none() {
-                    break "no other entries in queue";
+                    return "no other entries in queue".into();
                 }
 
                 let popped = popped.unwrap();
@@ -436,13 +428,11 @@ impl DiscordListener {
 
                 self.inner.write().current_presentation = Some(popped);
 
-
                 // TODO: introduce command
-                "popped(removed an entry at 0 index and updated ongoing presentation)\nDO NOT FORGET TO TWEET!"
-            }},
+                "popped(removed an entry at 0 index and updated ongoing presentation)\nDO NOT FORGET TO TWEET!".into()
+            }
 
-            #[allow(unused_variables)]
-            (Presentation(Reorder { map }), _) => "unimplemented",
+            (Presentation(Reorder { .. }), _) => "unimplemented".into(),
 
             (Presentation(Remove { index }), Some(sender)) => {
                 let deleted = self.ctx.presentations.write().await.remove(index).await;
@@ -453,6 +443,7 @@ impl DiscordListener {
                 } else {
                     "not found such entry"
                 }
+                .into()
             }
 
             (Presentation(Update { index, new_title }), Some(sender)) => {
@@ -463,10 +454,10 @@ impl DiscordListener {
                     Some(p) => {
                         p.title = new_title.to_string();
                         self.update_presentations(sender).await;
-                        "overwrote"
+                        "overwrote".into()
                     }
 
-                    None => "not found such entry",
+                    None => "not found such entry".into(),
                 }
             }
 
@@ -476,17 +467,17 @@ impl DiscordListener {
                     title,
                 }),
                 Some(sender),
-            ) => block! {{
+            ) => {
                 let uid = match extract_user_id_from_mention(user_mention) {
                     Some(id) => id,
-                    None => break "1st argument must be user mention"
+                    None => return "1st argument must be user mention".into(),
                 };
 
                 let user = match UserId(uid).to_user(&ctx).await {
                     Ok(u) => u,
                     Err(e) => {
                         tracing::error!("failed to fetch user info. id: {}, err: {}", uid, e);
-                        break "couldn't get user info. please check user mention is correct. read log for more info."
+                        return "couldn't get user info. please check user mention is correct. read log for more info.".into();
                     }
                 };
 
@@ -510,12 +501,13 @@ impl DiscordListener {
                             name: name.into(),
                         },
                         title,
-                    }).await;
+                    })
+                    .await;
 
                 self.update_presentations(sender).await;
 
-                "pushed"
-            }},
+                "pushed".into()
+            }
 
             (
                 Tweet {
@@ -526,7 +518,7 @@ impl DiscordListener {
                     simulation,
                 },
                 _,
-            ) => block! {{
+            ) => {
                 let mut message = msg.to_string();
 
                 let has_footer = with_youtube_footer || with_discord_footer || with_twitter_footer;
@@ -564,8 +556,10 @@ impl DiscordListener {
                     .sum();
 
                 if tweet_len > 280 {
-                    text_buffer = format!("Tweet length is longer than 280({}). Shorten the message or the footer.", tweet_len);
-                    break text_buffer.as_str();
+                    return format!(
+                        "Tweet length is longer than 280({}). Shorten the message or the footer.",
+                        tweet_len
+                    );
                 }
 
                 if !simulation {
@@ -575,7 +569,7 @@ impl DiscordListener {
 
                         Err(e) => {
                             tracing::error!("failed to tweet: {:?}", e);
-                            break "failed to tweet. read log for more details.";
+                            return "failed to tweet. read log for more details.".into();
                         }
                     };
 
@@ -584,11 +578,10 @@ impl DiscordListener {
                     message = format!("Tweet simulation.\nbody:\n```\n{}\n```", message);
                 };
 
-                text_buffer = message;
-                text_buffer.as_str()
-            }},
+                message
+            }
 
-            (PresentationTweet { simulation }, _) => block! {{
+            (PresentationTweet { simulation }, _) => {
                 let msg = match self.inner.read().current_presentation.as_ref() {
                     Some(pre) => {
                         format!(
@@ -600,34 +593,28 @@ impl DiscordListener {
                     }
 
                     None => {
-                        break "internal error: current_presentation was None";
+                        return "internal error: current_presentation was None".into();
                     }
                 };
 
                 if simulation {
-                    text_buffer = format!("Simulation.\nbody: ```\n{}\n```", msg);
-                    break text_buffer.as_str();
+                    return format!("Simulation.\nbody: ```\n{}\n```", msg);
                 }
 
                 let link = match self.tweet(&msg).await {
                     Ok(Some(link)) => link,
-                    Ok(None) => "unavailable".to_string(),
+                    Ok(None) => "unavailable".into(),
 
                     Err(e) => {
                         tracing::error!("failed to tweet: {:?}", e);
-                        break "failed to tweet. read log for more details.";
+                        return "failed to tweet. read log for more details.".into();
                     }
                 };
 
-                text_buffer = format!("Twitted.\nlink: {}\nbody: ```\n{}\n```", link, msg);
-                text_buffer.as_str()
-            }},
+                format!("Twitted.\nlink: {}\nbody: ```\n{}\n```", link, msg)
+            }
 
-            (_, None) => "webview was not ready",
-        };
-
-        if let Err(e) = message.channel_id.say(&ctx, text).await {
-            tracing::error!("failed to send message!: {:?}\n{}", e, &text);
+            (_, None) => "webview was not ready".into(),
         }
     }
 
