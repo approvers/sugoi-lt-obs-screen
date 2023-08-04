@@ -27,11 +27,7 @@ const PREFIX: &str = "g!live";
 fn extract_user_id_from_mention(mention_text: &str) -> Option<u64> {
     static MENTION_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"<@!(?P<id>\d+)>").unwrap());
 
-    let id_str = MENTION_REGEX
-        .captures(mention_text)?
-        .name("id")
-        .unwrap()
-        .as_str();
+    let id_str = MENTION_REGEX.captures(mention_text)?.name("id")?.as_str();
 
     id_str.parse().ok()
 }
@@ -194,17 +190,13 @@ impl DiscordListener {
             }
 
             (Some("presentations"), ["reorder", map @ ..]) => {
-                let parsed_map = map.iter().map(|x| x.parse()).collect::<Result<_, _>>();
-
-                if parsed_map.is_err() {
+                let Ok(map) = map.iter().map(|x| x.parse()).collect::<Result<_, _>>() else {
                     return Some(Help(Some(
                         "presentations reorder command's arguments must be valid usize",
                     )));
-                }
+                };
 
-                Presentation(Reorder {
-                    map: parsed_map.unwrap(),
-                })
+                Presentation(Reorder { map })
             }
 
             (Some("presentations"), ["remove", index, ..]) => match index.parse() {
@@ -406,13 +398,9 @@ impl DiscordListener {
             }
 
             (Presentation(Pop), Some(sender)) => {
-                let popped = self.ctx.presentations.write().await.pop().await;
-
-                if popped.is_none() {
+                let Some(popped) = self.ctx.presentations.write().await.pop().await else {
                     return "no other entries in queue".into();
-                }
-
-                let popped = popped.unwrap();
+                };
 
                 self.update_presentations(sender).await;
 
@@ -682,7 +670,7 @@ impl EventHandler for DiscordListener {
     }
 
     async fn message(&self, ctx: SerenityContext, message: Message) {
-        if self.inner.read().my_id.unwrap() == message.author.id.0 {
+        if self.inner.read().my_id == Some(message.author.id.0) {
             return;
         }
 
