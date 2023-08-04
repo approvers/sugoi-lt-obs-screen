@@ -670,29 +670,30 @@ impl EventHandler for DiscordListener {
 
         let listening_channel_id = self.inner.read().listening_channel_id;
 
-        if listening_channel_id == Some(message.channel_id.0) {
-            match self.ctx.webview_chan.read().await.as_ref() {
-                Some(chan) => {
-                    chan.send(ScreenAction::TimelinePush {
-                        user: User {
-                            icon: message.author.avatar_url(),
-                            ident: None,
-                            name: message
-                                .author_nick(&ctx)
-                                .await
-                                .unwrap_or_else(|| message.author.name.clone()),
-                        },
-                        service: Service::Discord,
-                        content: content.to_string(),
-                    })
-                    .await
-                    .ok();
-                }
-
-                None => tracing::warn!(
-                    "failed to send TimelinePush event because Webview was not initialized"
-                ),
+        if listening_channel_id != Some(message.channel_id.0) {
+            return;
+        }
+        match self.ctx.webview_chan.read().await.as_ref() {
+            Some(chan) => {
+                chan.send(ScreenAction::TimelinePush {
+                    user: User {
+                        icon: message.author.avatar_url(),
+                        ident: None,
+                        name: message
+                            .author_nick(&ctx)
+                            .await
+                            .unwrap_or_else(|| message.author.name.clone()),
+                    },
+                    service: Service::Discord,
+                    content: content.to_string(),
+                })
+                .await
+                .ok();
             }
+
+            None => tracing::warn!(
+                "failed to send TimelinePush event because Webview was not initialized"
+            ),
         }
     }
 }
