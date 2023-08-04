@@ -12,7 +12,7 @@ use {
         model::{channel::Message, id::UserId, prelude::Ready, user::User as SerenityUser},
         prelude::{Client, Context as SerenityContext, EventHandler},
     },
-    std::{future::Future, pin::Pin, sync::Arc},
+    std::sync::Arc,
     tokio::sync::mpsc::Sender,
 };
 
@@ -37,30 +37,6 @@ fn test_extract_user_id() {
     assert_eq!(extract_user_id_from_mention("<@!123>"), Some(123));
     assert_eq!(extract_user_id_from_mention("<@!012345>"), Some(12345));
     assert_eq!(extract_user_id_from_mention("hogehoge"), None);
-}
-
-/// Option<impl Future<Output = U>> -> Option<U>
-pub(crate) trait OptionFutExt<O> {
-    fn map_await<'a>(self) -> Pin<Box<dyn Future<Output = Option<O>> + Send + 'a>>
-    where
-        Self: 'a;
-}
-
-impl<I, O> OptionFutExt<O> for Option<I>
-where
-    I: Future<Output = O> + Send,
-{
-    fn map_await<'a>(self) -> Pin<Box<dyn Future<Output = Option<O>> + Send + 'a>>
-    where
-        Self: 'a,
-    {
-        Box::pin(async {
-            match self {
-                Some(t) => Some(t.await),
-                None => None,
-            }
-        })
-    }
 }
 
 fn trim_code_block(msg: &str) -> String {
@@ -467,14 +443,11 @@ impl DiscordListener {
                     }
                 };
 
-                let name = message
-                    .guild_id
-                    .map(|gid| user.nick_in(&ctx.http, gid))
-                    .map_await()
-                    .await
-                    .and_then(|x| x);
-
-                let name = name.as_ref().unwrap_or(&user.name);
+                let icon = user.avatar_url();
+                let name = match message.guild_id {
+                    Some(gid) => user.nick_in(&ctx.http, gid).await.unwrap_or(user.name),
+                    None => user.name,
+                };
 
                 self.ctx
                     .presentations
@@ -482,9 +455,9 @@ impl DiscordListener {
                     .await
                     .push(crate::presentations::Presentation {
                         presenter: User {
-                            icon: user.avatar_url(),
+                            icon,
                             ident: None,
-                            name: name.into(),
+                            name,
                         },
                         title,
                     })
