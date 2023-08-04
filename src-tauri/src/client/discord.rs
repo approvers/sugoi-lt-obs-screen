@@ -326,7 +326,7 @@ impl DiscordListener {
                 self.inner.write().listening_channel_id = Some(chan.0);
 
                 let text_buffer = format!("now listening at <#{}>", chan.0);
-                tracing::info!("{}", &text_buffer);
+                tracing::info!("{}", text_buffer);
                 text_buffer
             }
 
