@@ -6,7 +6,6 @@ use {
     },
     anyhow::{Context as _, Result},
     async_trait::async_trait,
-    lazy_static::lazy_static,
     parking_lot::RwLock,
     regex::Regex,
     serenity::{
@@ -17,6 +16,7 @@ use {
     tokio::sync::mpsc::Sender,
 };
 
+use once_cell::sync::Lazy;
 use serenity::prelude::GatewayIntents;
 
 #[cfg(feature = "obs")]
@@ -25,9 +25,7 @@ use crate::obs::ObsAction;
 const PREFIX: &str = "g!live";
 
 fn extract_user_id_from_mention(mention_text: &str) -> Option<u64> {
-    lazy_static! {
-        static ref MENTION_REGEX: Regex = Regex::new(r"<@!(?P<id>\d+)>").unwrap();
-    }
+    static MENTION_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"<@!(?P<id>\d+)>").unwrap());
 
     let id_str = MENTION_REGEX
         .captures(mention_text)?
