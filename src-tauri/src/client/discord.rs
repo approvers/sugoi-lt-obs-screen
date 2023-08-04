@@ -711,11 +711,7 @@ impl EventHandler for DiscordListener {
 
         let listening_channel_id = self.inner.read().listening_channel_id;
 
-        if let Some(target_id) = listening_channel_id {
-            if target_id != message.channel_id.0 {
-                return; // TODO:
-            }
-
+        if listening_channel_id == Some(message.channel_id.0) {
             match self.ctx.webview_chan.read().await.as_ref() {
                 Some(chan) => {
                     chan.send(ScreenAction::TimelinePush {
