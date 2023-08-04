@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import { Presentation } from "../../../lib/data/ScreenData";
 import styles from "../../../style/ltscreen/footer.module.scss";
 
@@ -7,7 +5,7 @@ type FooterProps = {
   presentation: Presentation;
 };
 
-export const Footer: React.FC<FooterProps> = ({ presentation }) => (
+export const Footer = ({ presentation }: FooterProps): JSX.Element => (
   <footer className={styles.footer_root}>
     <div className={styles.icon}>
       <img

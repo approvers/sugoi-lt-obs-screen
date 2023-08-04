@@ -8,7 +8,7 @@ import styles from "../style/app.module.scss";
 import { LTScreen } from "./ltscreen/LTScreen";
 import { WaitingScreen } from "./waiting/WaitingScreen";
 
-function selectPage(page: Page): React.FC<{ state: ScreenData }> {
+function selectPage(page: Page): (props: { state: ScreenData }) => JSX.Element {
   switch (page) {
     case "LTScreen":
       return LTScreen;

@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import { Service, TimelineCard } from "../../../../lib/data/ScreenData";
 import { useWindowDimensions } from "../../../../lib/WindowHooks";
 import styles from "../../../../style/ltscreen/main.module.scss";
@@ -13,7 +11,7 @@ const icon: { [key in Service]: string } = {
 type TimelineProps = {
   timeline: Array<TimelineCard>;
 };
-export const Timeline: React.FC<TimelineProps> = ({ timeline }) => {
+export const Timeline = ({ timeline }: TimelineProps): JSX.Element => {
   const { width } = useWindowDimensions();
 
   // TODO: この数値をどうにかしたい
