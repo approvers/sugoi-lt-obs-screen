@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import { Presentation } from "../../../lib/data/ScreenData";
 import styles from "../../../style/waiting/waiting_screen.module.scss";
 import { PresenterListElement } from "./PresenterListElement";
@@ -7,9 +5,9 @@ import { PresenterListElement } from "./PresenterListElement";
 type PresenterListProps = {
   presentations: Array<Presentation>;
 };
-export const PresenterList: React.FC<PresenterListProps> = ({
+export const PresenterList = ({
   presentations,
-}) => {
+}: PresenterListProps): JSX.Element | null => {
   if (presentations.length === 0) return null;
 
   return (

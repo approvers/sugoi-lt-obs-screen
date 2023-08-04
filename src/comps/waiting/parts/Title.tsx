@@ -1,11 +1,9 @@
-import * as React from "react";
-
 import styles from "../../../style/waiting/waiting_screen.module.scss";
 
 type TitleProps = {
   message: string;
 };
-export const Title: React.FC<TitleProps> = ({ message }) => (
+export const Title = ({ message }: TitleProps): JSX.Element => (
   <div className={styles.title + " " + styles.title_border}>
     <img className={styles.title_logo} src={"/approvers_icon.png"} alt="" />
     <p className={styles.title_caption}>限界開発鯖 1周年記念LT企画</p>
