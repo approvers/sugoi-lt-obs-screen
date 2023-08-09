@@ -38,7 +38,7 @@ version = "0.11"
 optional = true
 
 [dependencies.tokio]
-version = "1.29"
+version = "1.30"
 features = ["rt-multi-thread", "parking_lot"]
 
 [dependencies.serenity]
