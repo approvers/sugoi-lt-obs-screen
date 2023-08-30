@@ -28,7 +28,7 @@
     "@shun-shobon/eslint-config-base": "^0.5.1",
     "@shun-shobon/eslint-config-react": "^0.2.1",
     "@tauri-apps/cli": "^1.4.0",
-    "@tsconfig/strictest": "^2.0.1",
+    "@tsconfig/strictest": "^2.0.2",
     "@tsconfig/vite-react": "^2.0.0",
     "@types/node": "^18.17.12",
     "@types/react": "^18.2.21",
