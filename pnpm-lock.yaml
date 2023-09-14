@@ -18,8 +18,8 @@ dependencies:
     specifier: ^5.0.2
     version: 5.0.2
   sass:
-    specifier: ^1.66.1
-    version: 1.66.1
+    specifier: ^1.67.0
+    version: 1.67.0
   typescript:
     specifier: ^5.2.2
     version: 5.2.2
@@ -63,7 +63,7 @@ devDependencies:
     version: 3.0.3
   vite:
     specifier: ^4.4.9
-    version: 4.4.9(@types/node@18.17.15)(sass@1.66.1)
+    version: 4.4.9(@types/node@18.17.15)(sass@1.67.0)
   vite-plugin-html:
     specifier: ^3.2.0
     version: 3.2.0(vite@4.4.9)
@@ -979,7 +979,7 @@ packages:
       '@babel/plugin-transform-react-jsx-self': 7.22.5(@babel/core@7.22.9)
       '@babel/plugin-transform-react-jsx-source': 7.22.5(@babel/core@7.22.9)
       react-refresh: 0.14.0
-      vite: 4.4.9(@types/node@18.17.15)(sass@1.66.1)
+      vite: 4.4.9(@types/node@18.17.15)(sass@1.67.0)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -3001,8 +3001,8 @@ packages:
       is-regex: 1.1.4
     dev: true
 
-  /sass@1.66.1:
-    resolution: {integrity: sha512-50c+zTsZOJVgFfTgwwEzkjA3/QACgdNsKueWPyAR0mRINIvLAStVQBbPg14iuqEQ74NPDbXzJARJ/O4SI1zftA==}
+  /sass@1.67.0:
+    resolution: {integrity: sha512-SVrO9ZeX/QQyEGtuZYCVxoeAL5vGlYjJ9p4i4HFuekWl8y/LtJ7tJc10Z+ck1c8xOuoBm2MYzcLfTAffD0pl/A==}
     engines: {node: '>=14.0.0'}
     hasBin: true
     dependencies:
@@ -3362,10 +3362,10 @@ packages:
       html-minifier-terser: 6.1.0
       node-html-parser: 5.4.2
       pathe: 0.2.0
-      vite: 4.4.9(@types/node@18.17.15)(sass@1.66.1)
+      vite: 4.4.9(@types/node@18.17.15)(sass@1.67.0)
     dev: true
 
-  /vite@4.4.9(@types/node@18.17.15)(sass@1.66.1):
+  /vite@4.4.9(@types/node@18.17.15)(sass@1.67.0):
     resolution: {integrity: sha512-2mbUn2LlUmNASWwSCNSJ/EG2HuSRTnVNaydp6vMCm5VIqJsjMfbIWtbH2kDuwUVW5mMUKKZvGPX/rqeqVvv1XA==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
@@ -3397,7 +3397,7 @@ packages:
       esbuild: 0.18.17
       postcss: 8.4.27
       rollup: 3.27.2
-      sass: 1.66.1
+      sass: 1.67.0
     optionalDependencies:
       fsevents: 2.3.2
     dev: true
