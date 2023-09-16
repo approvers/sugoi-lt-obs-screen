@@ -38,8 +38,8 @@ devDependencies:
     specifier: ^2.0.2
     version: 2.0.2
   '@tsconfig/vite-react':
-    specifier: ^2.0.0
-    version: 2.0.0
+    specifier: ^2.0.1
+    version: 2.0.1
   '@types/node':
     specifier: ^18.17.16
     version: 18.17.16
@@ -796,8 +796,8 @@ packages:
     resolution: {integrity: sha512-jt4jIsWKvUvuY6adJnQJlb/UR7DdjC8CjHI/OaSQruj2yX9/K6+KOvDt/vD6udqos/FUk5Op66CvYT7TBLYO5Q==}
     dev: true
 
-  /@tsconfig/vite-react@2.0.0:
-    resolution: {integrity: sha512-erT+k9yzjRYnqRn6Fmvz+Y8+AtE+/YE954frGGwwit2ifsoWzRzYaOTlGj9/z0xJyYiaKNnNiFhid312QdC4rw==}
+  /@tsconfig/vite-react@2.0.1:
+    resolution: {integrity: sha512-Sxt6vfbhgEzV2TH/02wLEiM7RJVYGx1mn2INlzovXS6/Fnm7G+CyOHZUD5c5fOlQvH54LNhdGgfI/9fuK6+kuQ==}
     dev: true
 
   /@types/json-schema@7.0.12:
