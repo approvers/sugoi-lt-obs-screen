@@ -27,7 +27,7 @@
   "devDependencies": {
     "@shun-shobon/eslint-config-base": "^0.5.2",
     "@shun-shobon/eslint-config-react": "^0.2.2",
-    "@tauri-apps/cli": "^1.5.4",
+    "@tauri-apps/cli": "^1.5.5",
     "@tsconfig/strictest": "^2.0.2",
     "@tsconfig/vite-react": "^2.0.1",
     "@types/node": "^18.18.6",
