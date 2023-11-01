@@ -2,7 +2,7 @@
   "name": "sugoi-lt-obs-screen",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@8.10.1",
+  "packageManager": "pnpm@8.10.2",
   "scripts": {
     "build": "tauri build",
     "build:front": "vite build",
