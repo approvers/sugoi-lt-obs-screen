@@ -65,8 +65,8 @@ devDependencies:
     specifier: ^4.5.1
     version: 4.5.1(@types/node@18.19.3)(sass@1.69.5)
   vite-plugin-html:
-    specifier: ^3.2.0
-    version: 3.2.0(vite@4.5.1)
+    specifier: ^3.2.1
+    version: 3.2.1(vite@4.5.1)
 
 packages:
 
@@ -3428,8 +3428,8 @@ packages:
       spdx-expression-parse: 3.0.1
     dev: true
 
-  /vite-plugin-html@3.2.0(vite@4.5.1):
-    resolution: {integrity: sha512-2VLCeDiHmV/BqqNn5h2V+4280KRgQzCFN47cst3WiNK848klESPQnzuC3okH5XHtgwHH/6s1Ho/YV6yIO0pgoQ==}
+  /vite-plugin-html@3.2.1(vite@4.5.1):
+    resolution: {integrity: sha512-UuNTUvGPa9BxZK1I/VC+hWMSl0eIE5ClEdXza3SGGb09jxxS7oAAjRGalUJNZI9lAPvu0W817GD53K/p78wxQw==}
     peerDependencies:
       vite: '>=2.0.0'
     dependencies:
