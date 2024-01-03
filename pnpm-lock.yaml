@@ -18,8 +18,8 @@ dependencies:
     specifier: ^5.0.2
     version: 5.0.2
   sass:
-    specifier: ^1.69.6
-    version: 1.69.6
+    specifier: ^1.69.7
+    version: 1.69.7
   typescript:
     specifier: ^5.3.3
     version: 5.3.3
@@ -63,7 +63,7 @@ devDependencies:
     version: 3.1.1
   vite:
     specifier: ^4.5.1
-    version: 4.5.1(@types/node@18.19.4)(sass@1.69.6)
+    version: 4.5.1(@types/node@18.19.4)(sass@1.69.7)
   vite-plugin-html:
     specifier: ^3.2.1
     version: 3.2.1(vite@4.5.1)
@@ -1057,7 +1057,7 @@ packages:
       '@babel/plugin-transform-react-jsx-source': 7.23.3(@babel/core@7.23.5)
       '@types/babel__core': 7.20.5
       react-refresh: 0.14.0
-      vite: 4.5.1(@types/node@18.19.4)(sass@1.69.6)
+      vite: 4.5.1(@types/node@18.19.4)(sass@1.69.7)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -3080,8 +3080,8 @@ packages:
       is-regex: 1.1.4
     dev: true
 
-  /sass@1.69.6:
-    resolution: {integrity: sha512-qbRr3k9JGHWXCvZU77SD2OTwUlC+gNT+61JOLcmLm+XqH4h/5D+p4IIsxvpkB89S9AwJOyb5+rWNpIucaFxSFQ==}
+  /sass@1.69.7:
+    resolution: {integrity: sha512-rzj2soDeZ8wtE2egyLXgOOHQvaC2iosZrkF6v3EUG+tBwEvhqUCzm0VP3k9gHF9LXbSrRhT5SksoI56Iw8NPnQ==}
     engines: {node: '>=14.0.0'}
     hasBin: true
     dependencies:
@@ -3445,10 +3445,10 @@ packages:
       html-minifier-terser: 6.1.0
       node-html-parser: 5.4.2
       pathe: 0.2.0
-      vite: 4.5.1(@types/node@18.19.4)(sass@1.69.6)
+      vite: 4.5.1(@types/node@18.19.4)(sass@1.69.7)
     dev: true
 
-  /vite@4.5.1(@types/node@18.19.4)(sass@1.69.6):
+  /vite@4.5.1(@types/node@18.19.4)(sass@1.69.7):
     resolution: {integrity: sha512-AXXFaAJ8yebyqzoNB9fu2pHoo/nWX+xZlaRwoeYUxEqBO+Zj4msE5G+BhGBll9lYEKv9Hfks52PAF2X7qDYXQA==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
@@ -3480,7 +3480,7 @@ packages:
       esbuild: 0.18.17
       postcss: 8.4.27
       rollup: 3.27.2
-      sass: 1.69.6
+      sass: 1.69.7
     optionalDependencies:
       fsevents: 2.3.2
     dev: true
