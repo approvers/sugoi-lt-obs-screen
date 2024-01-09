@@ -41,8 +41,8 @@ devDependencies:
     specifier: ^2.0.1
     version: 2.0.1
   '@types/node':
-    specifier: ^18.19.5
-    version: 18.19.5
+    specifier: ^18.19.6
+    version: 18.19.6
   '@types/react':
     specifier: ^18.2.47
     version: 18.2.47
@@ -63,7 +63,7 @@ devDependencies:
     version: 3.1.1
   vite:
     specifier: ^4.5.1
-    version: 4.5.1(@types/node@18.19.5)(sass@1.69.7)
+    version: 4.5.1(@types/node@18.19.6)(sass@1.69.7)
   vite-plugin-html:
     specifier: ^3.2.1
     version: 3.2.1(vite@4.5.1)
@@ -875,8 +875,8 @@ packages:
     resolution: {integrity: sha512-Hr5Jfhc9eYOQNPYO5WLDq/n4jqijdHNlDXjuAQkkt+mWdQR+XJToOHrsD4cPaMXpn6KO7y2+wM8AZEs8VpBLVA==}
     dev: true
 
-  /@types/node@18.19.5:
-    resolution: {integrity: sha512-22MG6T02Hos2JWfa1o5jsIByn+bc5iOt1IS4xyg6OG68Bu+wMonVZzdrgCw693++rpLE9RUT/Bx15BeDzO0j+g==}
+  /@types/node@18.19.6:
+    resolution: {integrity: sha512-X36s5CXMrrJOs2lQCdDF68apW4Rfx9ixYMawlepwmE4Anezv/AV2LSpKD1Ub8DAc+urp5bk0BGZ6NtmBitfnsg==}
     dependencies:
       undici-types: 5.26.5
     dev: true
@@ -1057,7 +1057,7 @@ packages:
       '@babel/plugin-transform-react-jsx-source': 7.23.3(@babel/core@7.23.5)
       '@types/babel__core': 7.20.5
       react-refresh: 0.14.0
-      vite: 4.5.1(@types/node@18.19.5)(sass@1.69.7)
+      vite: 4.5.1(@types/node@18.19.6)(sass@1.69.7)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -3445,10 +3445,10 @@ packages:
       html-minifier-terser: 6.1.0
       node-html-parser: 5.4.2
       pathe: 0.2.0
-      vite: 4.5.1(@types/node@18.19.5)(sass@1.69.7)
+      vite: 4.5.1(@types/node@18.19.6)(sass@1.69.7)
     dev: true
 
-  /vite@4.5.1(@types/node@18.19.5)(sass@1.69.7):
+  /vite@4.5.1(@types/node@18.19.6)(sass@1.69.7):
     resolution: {integrity: sha512-AXXFaAJ8yebyqzoNB9fu2pHoo/nWX+xZlaRwoeYUxEqBO+Zj4msE5G+BhGBll9lYEKv9Hfks52PAF2X7qDYXQA==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
@@ -3476,7 +3476,7 @@ packages:
       terser:
         optional: true
     dependencies:
-      '@types/node': 18.19.5
+      '@types/node': 18.19.6
       esbuild: 0.18.17
       postcss: 8.4.27
       rollup: 3.27.2
