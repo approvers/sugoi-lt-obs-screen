@@ -9,7 +9,7 @@ jobs:
   front:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: shun-shobon/actions/setup-node@master
         with:
           node-version-file: .tool-versions
@@ -19,7 +19,7 @@ jobs:
   tauri:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
       - uses: dtolnay/rust-toolchain@nightly
         with:
