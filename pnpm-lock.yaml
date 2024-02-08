@@ -41,8 +41,8 @@ devDependencies:
     specifier: ^2.0.1
     version: 2.0.1
   '@types/node':
-    specifier: ^18.19.14
-    version: 18.19.14
+    specifier: ^18.19.15
+    version: 18.19.15
   '@types/react':
     specifier: ^18.2.55
     version: 18.2.55
@@ -63,7 +63,7 @@ devDependencies:
     version: 3.2.5
   vite:
     specifier: ^4.5.2
-    version: 4.5.2(@types/node@18.19.14)(sass@1.70.0)
+    version: 4.5.2(@types/node@18.19.15)(sass@1.70.0)
   vite-plugin-html:
     specifier: ^3.2.2
     version: 3.2.2(vite@4.5.2)
@@ -875,8 +875,8 @@ packages:
     resolution: {integrity: sha512-Hr5Jfhc9eYOQNPYO5WLDq/n4jqijdHNlDXjuAQkkt+mWdQR+XJToOHrsD4cPaMXpn6KO7y2+wM8AZEs8VpBLVA==}
     dev: true
 
-  /@types/node@18.19.14:
-    resolution: {integrity: sha512-EnQ4Us2rmOS64nHDWr0XqAD8DsO6f3XR6lf9UIIrZQpUzPVdN/oPuEzfDWNHSyXLvoGgjuEm/sPwFGSSs35Wtg==}
+  /@types/node@18.19.15:
+    resolution: {integrity: sha512-AMZ2UWx+woHNfM11PyAEQmfSxi05jm9OlkxczuHeEqmvwPkYj6MWv44gbzDPefYOLysTOFyI3ziiy2ONmUZfpA==}
     dependencies:
       undici-types: 5.26.5
     dev: true
@@ -1057,7 +1057,7 @@ packages:
       '@babel/plugin-transform-react-jsx-source': 7.23.3(@babel/core@7.23.5)
       '@types/babel__core': 7.20.5
       react-refresh: 0.14.0
-      vite: 4.5.2(@types/node@18.19.14)(sass@1.70.0)
+      vite: 4.5.2(@types/node@18.19.15)(sass@1.70.0)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -3445,10 +3445,10 @@ packages:
       html-minifier-terser: 6.1.0
       node-html-parser: 5.4.2
       pathe: 0.2.0
-      vite: 4.5.2(@types/node@18.19.14)(sass@1.70.0)
+      vite: 4.5.2(@types/node@18.19.15)(sass@1.70.0)
     dev: true
 
-  /vite@4.5.2(@types/node@18.19.14)(sass@1.70.0):
+  /vite@4.5.2(@types/node@18.19.15)(sass@1.70.0):
     resolution: {integrity: sha512-tBCZBNSBbHQkaGyhGCDUGqeo2ph8Fstyp6FMSvTtsXeZSPpSMGlviAOav2hxVTqFcx8Hj/twtWKsMJXNY0xI8w==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
@@ -3476,7 +3476,7 @@ packages:
       terser:
         optional: true
     dependencies:
-      '@types/node': 18.19.14
+      '@types/node': 18.19.15
       esbuild: 0.18.17
       postcss: 8.4.27
       rollup: 3.27.2
