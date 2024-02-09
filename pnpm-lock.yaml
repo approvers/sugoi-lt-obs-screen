@@ -35,8 +35,8 @@ devDependencies:
     specifier: ^1.5.5
     version: 1.5.5
   '@tsconfig/strictest':
-    specifier: ^2.0.2
-    version: 2.0.2
+    specifier: ^2.0.3
+    version: 2.0.3
   '@tsconfig/vite-react':
     specifier: ^2.0.1
     version: 2.0.1
@@ -834,8 +834,8 @@ packages:
       '@tauri-apps/cli-win32-x64-msvc': 1.5.5
     dev: true
 
-  /@tsconfig/strictest@2.0.2:
-    resolution: {integrity: sha512-jt4jIsWKvUvuY6adJnQJlb/UR7DdjC8CjHI/OaSQruj2yX9/K6+KOvDt/vD6udqos/FUk5Op66CvYT7TBLYO5Q==}
+  /@tsconfig/strictest@2.0.3:
+    resolution: {integrity: sha512-MroLvRhMbqtXI5WBSwoomro6OQS4xnCoudUrMb20JO0vLKUs0bAaCEcvM/immEBSJjFAK1l6jW1oAO8q3Ancrg==}
     dev: true
 
   /@tsconfig/vite-react@2.0.1:
