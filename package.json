@@ -30,7 +30,7 @@
     "@tauri-apps/cli": "^1.5.11",
     "@tsconfig/strictest": "^2.0.5",
     "@tsconfig/vite-react": "^2.0.1",
-    "@types/node": "^18.19.28",
+    "@types/node": "^18.19.29",
     "@types/react": "^18.2.74",
     "@types/react-dom": "^18.2.23",
     "@vitejs/plugin-react": "^4.2.1",
