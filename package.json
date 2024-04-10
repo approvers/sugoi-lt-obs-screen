@@ -25,7 +25,7 @@
     "typescript": "^5.4.5"
   },
   "devDependencies": {
-    "@shun-shobon/eslint-config-base": "^0.5.2",
+    "@shun-shobon/eslint-config-base": "^1.0.14",
     "@shun-shobon/eslint-config-react": "^0.2.2",
     "@tauri-apps/cli": "^1.5.11",
     "@tsconfig/strictest": "^2.0.5",
