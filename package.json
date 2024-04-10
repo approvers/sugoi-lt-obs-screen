@@ -22,7 +22,7 @@
     "react-dom": "^18.2.0",
     "ress": "^5.0.2",
     "sass": "^1.74.1",
-    "typescript": "^5.4.4"
+    "typescript": "^5.4.5"
   },
   "devDependencies": {
     "@shun-shobon/eslint-config-base": "^0.5.2",
