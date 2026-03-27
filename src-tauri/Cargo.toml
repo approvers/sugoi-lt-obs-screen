@@ -53,7 +53,7 @@ optional = true
 features = ["fetch"]
 
 [target."cfg(windows)".build-dependencies]
-winres = "0.1"
+winres = "0.1.12"
 
 [[bin]]
 name = "sugoi-lt-obs-screen"
