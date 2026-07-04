@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: shun-shobon/actions/setup-node@master
+      - uses: actions/setup-node@v6
         with:
           node-version-file: .tool-versions
 
